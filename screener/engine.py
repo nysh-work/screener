@@ -68,6 +68,25 @@ class ScreeningEngine:
             operator = condition['operator']
             value = condition.get('value')
 
+            # Handle boolean signal flags
+            signal_map = {
+                'ema_bullish': "ti.ema_20 > ti.ema_50",
+                'ema_bearish': "ti.ema_20 < ti.ema_50",
+                'macd_bullish': "ti.macd > 0",
+                'macd_bearish': "ti.macd < 0",
+                'trending': "ti.choppiness_index < 38.2",
+                'choppy': "ti.choppiness_index > 61.8",
+            }
+            if field in signal_map:
+                expr = signal_map[field]
+                if value is True:
+                    where_clauses.append(expr)
+                elif value is False:
+                    where_clauses.append(f"NOT ({expr})")
+                else:
+                    where_clauses.append(expr)
+                continue
+
             # Add table prefix if field is in our mapping
             qualified_field = f"{column_table_map[field]}.{field}" if field in column_table_map else field
             param_name = field.replace('.', '_')
@@ -156,13 +175,37 @@ class ScreeningEngine:
             ti.macd,
             ti.choppiness_index
         FROM company_master c
-        LEFT JOIN fundamentals f ON c.ticker = f.ticker
-        LEFT JOIN derived_metrics d ON c.ticker = d.ticker
-        LEFT JOIN growth_metrics g ON c.ticker = g.ticker
-        LEFT JOIN quality_metrics q ON c.ticker = q.ticker
-        LEFT JOIN technical_indicators ti ON c.ticker = ti.ticker
+        LEFT JOIN fundamentals f ON f.id = (
+            SELECT id FROM fundamentals
+            WHERE ticker = c.ticker
+            ORDER BY as_of_date DESC, id DESC
+            LIMIT 1
+        )
+        LEFT JOIN derived_metrics d ON d.id = (
+            SELECT id FROM derived_metrics
+            WHERE ticker = c.ticker
+            ORDER BY as_of_date DESC, id DESC
+            LIMIT 1
+        )
+        LEFT JOIN growth_metrics g ON g.id = (
+            SELECT id FROM growth_metrics
+            WHERE ticker = c.ticker
+            ORDER BY as_of_date DESC, id DESC
+            LIMIT 1
+        )
+        LEFT JOIN quality_metrics q ON q.id = (
+            SELECT id FROM quality_metrics
+            WHERE ticker = c.ticker
+            ORDER BY as_of_date DESC, id DESC
+            LIMIT 1
+        )
+        LEFT JOIN technical_indicators ti ON ti.id = (
+            SELECT id FROM technical_indicators
+            WHERE ticker = c.ticker
+            ORDER BY as_of_date DESC, id DESC
+            LIMIT 1
+        )
         WHERE {where_sql}
-        AND (ti.as_of_date = (SELECT MAX(as_of_date) FROM technical_indicators WHERE ticker = c.ticker) OR ti.as_of_date IS NULL)
         ORDER BY d.roe DESC, c.market_cap DESC
         """
 

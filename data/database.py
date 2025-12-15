@@ -102,32 +102,72 @@ class Database:
     def add_fundamentals(self, fundamentals_data: Dict) -> None:
         """Add fundamental data for a company."""
         with self.get_session() as session:
-            fundamentals = Fundamentals(**fundamentals_data)
-            session.add(fundamentals)
+            existing = session.query(Fundamentals).filter_by(
+                ticker=fundamentals_data['ticker'],
+                as_of_date=fundamentals_data['as_of_date']
+            ).first()
+            if existing:
+                for key, value in fundamentals_data.items():
+                    setattr(existing, key, value)
+            else:
+                fundamentals = Fundamentals(**fundamentals_data)
+                session.add(fundamentals)
 
     def add_derived_metrics(self, metrics_data: Dict) -> None:
         """Add derived metrics for a company."""
         with self.get_session() as session:
-            metrics = DerivedMetrics(**metrics_data)
-            session.add(metrics)
+            existing = session.query(DerivedMetrics).filter_by(
+                ticker=metrics_data['ticker'],
+                as_of_date=metrics_data['as_of_date']
+            ).first()
+            if existing:
+                for key, value in metrics_data.items():
+                    setattr(existing, key, value)
+            else:
+                metrics = DerivedMetrics(**metrics_data)
+                session.add(metrics)
 
     def add_growth_metrics(self, growth_data: Dict) -> None:
         """Add growth metrics for a company."""
         with self.get_session() as session:
-            growth = GrowthMetrics(**growth_data)
-            session.add(growth)
+            existing = session.query(GrowthMetrics).filter_by(
+                ticker=growth_data['ticker'],
+                as_of_date=growth_data['as_of_date']
+            ).first()
+            if existing:
+                for key, value in growth_data.items():
+                    setattr(existing, key, value)
+            else:
+                growth = GrowthMetrics(**growth_data)
+                session.add(growth)
 
     def add_quality_metrics(self, quality_data: Dict) -> None:
         """Add quality metrics for a company."""
         with self.get_session() as session:
-            quality = QualityMetrics(**quality_data)
-            session.add(quality)
+            existing = session.query(QualityMetrics).filter_by(
+                ticker=quality_data['ticker'],
+                as_of_date=quality_data['as_of_date']
+            ).first()
+            if existing:
+                for key, value in quality_data.items():
+                    setattr(existing, key, value)
+            else:
+                quality = QualityMetrics(**quality_data)
+                session.add(quality)
 
     def add_technical_indicators(self, technical_data: Dict) -> None:
         """Add technical indicators for a company."""
         with self.get_session() as session:
-            indicators = TechnicalIndicators(**technical_data)
-            session.add(indicators)
+            existing = session.query(TechnicalIndicators).filter_by(
+                ticker=technical_data['ticker'],
+                as_of_date=technical_data['as_of_date']
+            ).first()
+            if existing:
+                for key, value in technical_data.items():
+                    setattr(existing, key, value)
+            else:
+                indicators = TechnicalIndicators(**technical_data)
+                session.add(indicators)
 
     def add_to_portfolio(self, portfolio_data: Dict) -> bool:
         """Add a stock to portfolio. Returns True if added, False if duplicate exists."""
@@ -177,10 +217,18 @@ class Database:
             ti.choppiness_index
         FROM portfolio p
         LEFT JOIN company_master c ON p.ticker = c.ticker
-        LEFT JOIN derived_metrics dm ON p.ticker = dm.ticker
-        LEFT JOIN technical_indicators ti ON p.ticker = ti.ticker
-        WHERE (ti.as_of_date = (SELECT MAX(as_of_date) FROM technical_indicators WHERE ticker = p.ticker) OR ti.as_of_date IS NULL)
-        AND (dm.as_of_date = (SELECT MAX(as_of_date) FROM derived_metrics WHERE ticker = p.ticker) OR dm.as_of_date IS NULL)
+        LEFT JOIN derived_metrics dm ON dm.id = (
+            SELECT id FROM derived_metrics
+            WHERE ticker = p.ticker
+            ORDER BY as_of_date DESC, id DESC
+            LIMIT 1
+        )
+        LEFT JOIN technical_indicators ti ON ti.id = (
+            SELECT id FROM technical_indicators
+            WHERE ticker = p.ticker
+            ORDER BY as_of_date DESC, id DESC
+            LIMIT 1
+        )
         ORDER BY p.purchase_date DESC
         """
         return self.execute_query(query)
@@ -230,12 +278,24 @@ class Database:
             ti.choppiness_index
         FROM watchlist w
         LEFT JOIN company_master c ON w.ticker = c.ticker
-        LEFT JOIN fundamentals f ON w.ticker = f.ticker
-        LEFT JOIN derived_metrics dm ON w.ticker = dm.ticker
-        LEFT JOIN technical_indicators ti ON w.ticker = ti.ticker
-        WHERE f.as_of_date = (SELECT MAX(as_of_date) FROM fundamentals WHERE ticker = w.ticker)
-        AND (ti.as_of_date = (SELECT MAX(as_of_date) FROM technical_indicators WHERE ticker = w.ticker) OR ti.as_of_date IS NULL)
-        AND (dm.as_of_date = (SELECT MAX(as_of_date) FROM derived_metrics WHERE ticker = w.ticker) OR dm.as_of_date IS NULL)
+        LEFT JOIN fundamentals f ON f.id = (
+            SELECT id FROM fundamentals
+            WHERE ticker = w.ticker
+            ORDER BY as_of_date DESC, id DESC
+            LIMIT 1
+        )
+        LEFT JOIN derived_metrics dm ON dm.id = (
+            SELECT id FROM derived_metrics
+            WHERE ticker = w.ticker
+            ORDER BY as_of_date DESC, id DESC
+            LIMIT 1
+        )
+        LEFT JOIN technical_indicators ti ON ti.id = (
+            SELECT id FROM technical_indicators
+            WHERE ticker = w.ticker
+            ORDER BY as_of_date DESC, id DESC
+            LIMIT 1
+        )
         ORDER BY w.added_date DESC
         """
         return self.execute_query(query)
@@ -369,15 +429,37 @@ class Database:
             ti.macd,
             ti.choppiness_index
         FROM company_master c
-        LEFT JOIN fundamentals f ON c.ticker = f.ticker
-        LEFT JOIN derived_metrics d ON c.ticker = d.ticker
-        LEFT JOIN growth_metrics g ON c.ticker = g.ticker
-        LEFT JOIN quality_metrics q ON c.ticker = q.ticker
-        LEFT JOIN technical_indicators ti ON c.ticker = ti.ticker
+        LEFT JOIN fundamentals f ON f.id = (
+            SELECT id FROM fundamentals
+            WHERE ticker = c.ticker
+            ORDER BY as_of_date DESC, id DESC
+            LIMIT 1
+        )
+        LEFT JOIN derived_metrics d ON d.id = (
+            SELECT id FROM derived_metrics
+            WHERE ticker = c.ticker
+            ORDER BY as_of_date DESC, id DESC
+            LIMIT 1
+        )
+        LEFT JOIN growth_metrics g ON g.id = (
+            SELECT id FROM growth_metrics
+            WHERE ticker = c.ticker
+            ORDER BY as_of_date DESC, id DESC
+            LIMIT 1
+        )
+        LEFT JOIN quality_metrics q ON q.id = (
+            SELECT id FROM quality_metrics
+            WHERE ticker = c.ticker
+            ORDER BY as_of_date DESC, id DESC
+            LIMIT 1
+        )
+        LEFT JOIN technical_indicators ti ON ti.id = (
+            SELECT id FROM technical_indicators
+            WHERE ticker = c.ticker
+            ORDER BY as_of_date DESC, id DESC
+            LIMIT 1
+        )
         WHERE c.ticker = :ticker
-        AND (ti.as_of_date = (SELECT MAX(as_of_date) FROM technical_indicators WHERE ticker = c.ticker) OR ti.as_of_date IS NULL)
-        ORDER BY f.as_of_date DESC
-        LIMIT 1
         """
 
         results = self.execute_query(query, {'ticker': ticker})

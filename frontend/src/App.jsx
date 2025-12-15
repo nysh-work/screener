@@ -6,7 +6,7 @@ import StockDetail from './components/StockDetail';
 import Portfolio from './components/Portfolio';
 import Watchlist from './components/Watchlist';
 import CustomScreener from './components/CustomScreener';
-import Backtest from './components/Backtest';
+import Signals from './components/Signals';
 import DataManagement from './components/DataManagement';
 import Universe from './components/Universe';
 import IndexFooter from './components/IndexFooter';
@@ -113,8 +113,8 @@ function App() {
         return <Portfolio />;
       case 'watchlist':
         return <Watchlist />;
-      case 'backtest':
-        return <Backtest />;
+      case 'signals':
+        return <Signals />;
       case 'data':
         return <DataManagement />;
       case 'universe':
@@ -159,7 +159,7 @@ function App() {
               <NavItem id="portfolio" icon={PieChart} label="Portfolio" />
               <NavItem id="watchlist" icon={Eye} label="Watchlist" />
               <NavItem id="universe" icon={Globe} label="Universe" />
-              <NavItem id="backtest" icon={History} label="Backtest" />
+              <NavItem id="signals" icon={TrendingUp} label="Signals" />
               <NavItem id="data" icon={Database} label="Data" />
             </nav>
 
@@ -194,7 +194,7 @@ function App() {
             <NavItem id="portfolio" icon={PieChart} label="Portfolio" />
             <NavItem id="watchlist" icon={Eye} label="Watchlist" />
             <NavItem id="universe" icon={Globe} label="Universe" />
-            <NavItem id="backtest" icon={History} label="Backtest" />
+            <NavItem id="signals" icon={TrendingUp} label="Signals" />
             <NavItem id="data" icon={Database} label="Data" />
           </div>
         )}

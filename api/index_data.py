@@ -93,7 +93,7 @@ class IndexDataService:
             # Get index name
             index_names = {
                 'nifty_50': 'NIFTY 50',
-                'nifty_midcao': 'NIFTY Midcap',
+                'nifty_midcap': 'NIFTY Midcap',
                 'nifty_bank': 'NIFTY Bank',
                 'nifty_it': 'NIFTY IT',
                 'nifty_auto': 'NIFTY Auto'
@@ -102,13 +102,13 @@ class IndexDataService:
             result = {
                 'index_name': index_names.get(index_key, index_key),
                 'symbol': symbol,
-                'current_price': current_price,
-                'high_14d': high_14d,
-                'low_14d': low_14d,
-                'ema_20': float(ema_20.iloc[-1]) if len(ema_20) > 0 and not pd.isna(ema_20.iloc[-1]) else current_price,
-                'ema_50': float(ema_50.iloc[-1]) if len(ema_50) > 0 and not pd.isna(ema_50.iloc[-1]) else current_price,
-                'macd': current_macd,
-                'choppiness_index': float(choppiness) if choppiness is not None and not pd.isna(choppiness) else 0,
+                'current_price': round(current_price, 2),
+                'high_14d': round(high_14d, 2),
+                'low_14d': round(low_14d, 2),
+                'ema_20': round(float(ema_20.iloc[-1]), 2) if len(ema_20) > 0 and not pd.isna(ema_20.iloc[-1]) else round(current_price, 2),
+                'ema_50': round(float(ema_50.iloc[-1]), 2) if len(ema_50) > 0 and not pd.isna(ema_50.iloc[-1]) else round(current_price, 2),
+                'macd': round(current_macd, 2),
+                'choppiness_index': round(float(choppiness), 2) if choppiness is not None and not pd.isna(choppiness) else 0,
                 'last_updated': datetime.now().isoformat()
             }
             

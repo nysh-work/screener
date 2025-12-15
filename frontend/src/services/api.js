@@ -34,6 +34,8 @@ export const removeFromPortfolio = (id) => api.delete(`/api/portfolio/${id}`);
 export const getWatchlist = () => api.get('/api/watchlist');
 export const addToWatchlist = (data) => api.post('/api/watchlist', data);
 export const removeFromWatchlist = (ticker) => api.delete(`/api/watchlist/${ticker}`);
+export const getSignals = (params) => api.get('/api/signals', { params });
+export const runSignalsBacktest = (data) => api.post('/api/signals/backtest', data);
 
 export default api;
 

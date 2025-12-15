@@ -205,6 +205,8 @@ class CustomScreenBuilder:
             'altman_z_score', 'promoter_holding', 'ocf_to_net_profit',
             # Technical
             'ema_20', 'ema_50', 'macd', 'choppiness_index', 'atr_14',
+            # Signal flags (boolean)
+            'ema_bullish', 'ema_bearish', 'macd_bullish', 'macd_bearish', 'trending', 'choppy',
             # Other
             'market_cap', 'price'
         ]

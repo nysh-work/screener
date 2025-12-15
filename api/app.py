@@ -101,6 +101,18 @@ class BacktestRequest(BaseModel):
     holding_period_days: int = 90
 
 
+class SignalsBacktestRequest(BaseModel):
+    ema_bullish: Optional[bool] = None
+    ema_bearish: Optional[bool] = None
+    macd_bullish: Optional[bool] = None
+    macd_bearish: Optional[bool] = None
+    trending: Optional[bool] = None
+    choppy: Optional[bool] = None
+    search: Optional[str] = None
+    days: int = 30
+    limit: int = 200
+
+
 class UniverseUpdateRequest(BaseModel):
     universe: str  # 'nifty50', 'nifty100', 'nifty500'
     limit: Optional[int] = None
@@ -136,6 +148,156 @@ async def health_check():
             "stocks_count": len(tickers),
             "timestamp": datetime.now().isoformat()
         }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/signals/backtest")
+async def signals_light_backtest(request: SignalsBacktestRequest):
+    """Run a light backtest over recent days for filtered signals."""
+    try:
+        # Get signals with filters applied
+        signals_resp = await get_signals(
+            ema_bullish=request.ema_bullish,
+            ema_bearish=request.ema_bearish,
+            macd_bullish=request.macd_bullish,
+            macd_bearish=request.macd_bearish,
+            trending=request.trending,
+            choppy=request.choppy,
+            search=request.search,
+            limit=request.limit
+        )
+        tickers = [s['ticker'] for s in signals_resp['signals']]
+        if not tickers:
+            return {
+                "summary": {
+                    "tickers_tested": 0,
+                    "avg_return_pct": 0.0,
+                    "median_return_pct": 0.0,
+                    "win_rate_pct": 0.0
+                },
+                "details": []
+            }
+        fetcher = YFinanceFetcher()
+        results = []
+        for t in tickers:
+            try:
+                hist = fetcher.fetch_historical_prices(t, period=f"{max(request.days, 1)}d")
+                if hist is None or hist.empty or len(hist) < 2:
+                    continue
+                start_idx = max(len(hist) - request.days, 0)
+                start_close = float(hist['Close'].iloc[start_idx])
+                last_close = float(hist['Close'].iloc[-1])
+                ret_pct = ((last_close / start_close) - 1.0) * 100.0 if start_close > 0 else 0.0
+                results.append({"ticker": t, "return_pct": round(ret_pct, 2)})
+            except Exception:
+                continue
+        if not results:
+            return {
+                "summary": {
+                    "tickers_tested": 0,
+                    "avg_return_pct": 0.0,
+                    "median_return_pct": 0.0,
+                    "win_rate_pct": 0.0
+                },
+                "details": []
+            }
+        import statistics
+        rets = [r["return_pct"] for r in results]
+        avg_ret = statistics.mean(rets) if rets else 0.0
+        median_ret = statistics.median(rets) if rets else 0.0
+        win_rate = (sum(1 for r in rets if r >= 0) / len(rets)) * 100.0 if rets else 0.0
+        return {
+            "summary": {
+                "tickers_tested": len(results),
+                "avg_return_pct": round(avg_ret, 2),
+                "median_return_pct": round(median_ret, 2),
+                "win_rate_pct": round(win_rate, 2)
+            },
+            "details": results
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+@app.get("/api/signals")
+async def get_signals(
+    ema_bullish: Optional[bool] = None,
+    ema_bearish: Optional[bool] = None,
+    macd_bullish: Optional[bool] = None,
+    macd_bearish: Optional[bool] = None,
+    trending: Optional[bool] = None,
+    choppy: Optional[bool] = None,
+    search: Optional[str] = None,
+    limit: int = Query(5000, ge=1, le=5000)
+):
+    """Get technical signals for all tickers with optional filters."""
+    try:
+        query = """
+        SELECT
+            c.ticker,
+            c.company_name,
+            f.price as current_price,
+            ti.ema_20,
+            ti.ema_50,
+            ti.macd,
+            ti.choppiness_index
+        FROM company_master c
+        LEFT JOIN fundamentals f ON f.id = (
+            SELECT id FROM fundamentals
+            WHERE ticker = c.ticker
+            ORDER BY as_of_date DESC, id DESC
+            LIMIT 1
+        )
+        LEFT JOIN technical_indicators ti ON ti.id = (
+            SELECT id FROM technical_indicators
+            WHERE ticker = c.ticker
+            ORDER BY as_of_date DESC, id DESC
+            LIMIT 1
+        )
+        """
+        rows = db.execute_query(query)
+        results = []
+        for r in rows:
+            price = r.get('current_price') or 0
+            ema20 = r.get('ema_20') or 0
+            ema50 = r.get('ema_50') or 0
+            macd = r.get('macd') or 0
+            chop = r.get('choppiness_index') or 0
+            item = {
+                'ticker': r['ticker'],
+                'company_name': r.get('company_name'),
+                'current_price': round(float(price), 2),
+                'ema_20': round(float(ema20), 2),
+                'ema_50': round(float(ema50), 2),
+                'macd': round(float(macd), 2),
+                'choppiness_index': round(float(chop), 2),
+                'ema_bullish': price > ema20 > ema50,
+                'ema_bearish': price < ema20 < ema50,
+                'macd_bullish': macd > 0,
+                'macd_bearish': macd < 0,
+                'trending': chop <= 38.2,
+                'choppy': chop >= 61.8
+            }
+            results.append(item)
+        # Apply filters server-side
+        def match_filters(s):
+            if search:
+                q = search.strip().lower()
+                if not (s['ticker'].lower().find(q) != -1 or (s.get('company_name') or '').lower().find(q) != -1):
+                    return False
+            if ema_bullish is not None and bool(s['ema_bullish']) != ema_bullish:
+                return False
+            if ema_bearish is not None and bool(s['ema_bearish']) != ema_bearish:
+                return False
+            if macd_bullish is not None and bool(s['macd_bullish']) != macd_bullish:
+                return False
+            if macd_bearish is not None and bool(s['macd_bearish']) != macd_bearish:
+                return False
+            if trending is not None and bool(s['trending']) != trending:
+                return False
+            if choppy is not None and bool(s['choppy']) != choppy:
+                return False
+            return True
+        filtered = [s for s in results if match_filters(s)]
+        return {'signals': filtered[:limit], 'count': len(filtered)}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -224,15 +386,24 @@ async def list_stocks(
             ti.macd,
             ti.choppiness_index
         FROM company_master c
-        LEFT JOIN fundamentals f ON c.ticker = f.ticker
-        LEFT JOIN derived_metrics dm ON c.ticker = dm.ticker
-        LEFT JOIN technical_indicators ti ON c.ticker = ti.ticker
-        WHERE f.as_of_date = (
-            SELECT MAX(as_of_date)
-            FROM fundamentals
+        LEFT JOIN fundamentals f ON f.id = (
+            SELECT id FROM fundamentals
             WHERE ticker = c.ticker
+            ORDER BY as_of_date DESC, id DESC
+            LIMIT 1
         )
-        AND (ti.as_of_date = (SELECT MAX(as_of_date) FROM technical_indicators WHERE ticker = c.ticker) OR ti.as_of_date IS NULL)
+        LEFT JOIN derived_metrics dm ON dm.id = (
+            SELECT id FROM derived_metrics
+            WHERE ticker = c.ticker
+            ORDER BY as_of_date DESC, id DESC
+            LIMIT 1
+        )
+        LEFT JOIN technical_indicators ti ON ti.id = (
+            SELECT id FROM technical_indicators
+            WHERE ticker = c.ticker
+            ORDER BY as_of_date DESC, id DESC
+            LIMIT 1
+        )
         """
 
         if sector:
@@ -621,6 +792,8 @@ async def update_universe(request: UniverseUpdateRequest):
                     db.add_derived_metrics(data['derived_metrics'])
                     db.add_growth_metrics(data['growth_metrics'])
                     db.add_quality_metrics(data['quality_metrics'])
+                    if 'technical_indicators' in data:
+                        db.add_technical_indicators(data['technical_indicators'])
                     success_count += 1
                 else:
                     error_count += 1
@@ -680,6 +853,58 @@ async def refresh_index_data():
         return {
             "message": "Index data cache refreshed successfully",
             "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/technical/backfill")
+async def backfill_technical_indicators(missing_only: bool = False):
+    """Backfill technical indicators for all tickers. Optionally only missing."""
+    try:
+        fetcher = YFinanceFetcher()
+        tickers = db.get_all_tickers()
+        success_count = 0
+        error_count = 0
+        processed = []
+        to_process = []
+        if missing_only:
+            q = """
+            SELECT c.ticker FROM company_master c
+            LEFT JOIN technical_indicators ti ON ti.id = (
+                SELECT id FROM technical_indicators
+                WHERE ticker = c.ticker
+                ORDER BY as_of_date DESC, id DESC
+                LIMIT 1
+            )
+            WHERE ti.ticker IS NULL
+            """
+            rows = db.execute_query(q)
+            to_process = [r['ticker'] for r in rows]
+        else:
+            to_process = tickers
+        for ticker in to_process:
+            try:
+                price_data = fetcher.fetch_historical_prices(ticker, period="1y")
+                if price_data is None or price_data.empty:
+                    error_count += 1
+                    continue
+                
+                indicators = fetcher.calculate_technical_indicators_from_history(ticker, price_data)
+                if indicators:
+                    db.add_technical_indicators(indicators)
+                    success_count += 1
+                    processed.append(ticker)
+                else:
+                    error_count += 1
+            except Exception:
+                error_count += 1
+        
+        return {
+            "message": "Technical indicators backfill completed",
+            "success": success_count,
+            "errors": error_count,
+            "total_attempted": len(tickers),
+            "processed": processed
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
