@@ -1,0 +1,32 @@
+# Stock Screener Configuration
+
+# Data Sources
+data_sources:
+  primary: yfinance
+  refresh_interval_hours: 24
+  cache_ttl_hours: 6
+
+# Database
+database:
+  path: data_files/screener.db
+  backup_enabled: true
+  backup_retention_days: 30
+
+# Screening
+screening:
+  default_market_cap_min_cr: 500
+  max_results: 200
+  enable_sector_filter: true
+
+# Reporting
+reporting:
+  default_format: console
+  output_directory: outputs/reports
+  include_charts: false
+
+# Logging
+logging:
+  level: INFO
+  file: logs/screener.log
+  rotation: daily
+  retention_days: 30

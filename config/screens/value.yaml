@@ -1,0 +1,22 @@
+name: value_screen
+description: Traditional value investing criteria
+logic: AND
+criteria:
+  price_to_book:
+    operator: '<'
+    value: 5
+  ev_ebitda:
+    operator: '<'
+    value: 12
+  roe:
+    operator: '>'
+    value: 15
+  debt_equity:
+    operator: '<'
+    value: 1.5
+  interest_coverage:
+    operator: '>'
+    value: 3
+  market_cap:
+    operator: '>'
+    value: 500

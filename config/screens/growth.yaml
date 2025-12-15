@@ -1,0 +1,16 @@
+name: growth_screen
+description: High-growth companies with sustainable metrics
+logic: AND
+criteria:
+  revenue_cagr_3y:
+    operator: '>'
+    value: 20
+  opm:
+    operator: '>'
+    value: 20
+  debt_equity:
+    operator: '<'
+    value: 1
+  interest_coverage:
+    operator: '>'
+    value: 5
