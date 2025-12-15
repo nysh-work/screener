@@ -115,7 +115,7 @@ export default function StockDetail({ ticker, onClose }) {
           <div className="mb-6">
             <div className="flex items-baseline mb-4">
               <span className="text-4xl font-bold text-gray-900 dark:text-gray-100">
-                {formatCurrency(stockData.current_price)}
+                {formatCurrency(stockData.price)}
               </span>
             </div>
           </div>
@@ -130,12 +130,12 @@ export default function StockDetail({ ticker, onClose }) {
             <MetricCard
               icon={BarChart3}
               label="P/E Ratio"
-              value={formatNumber(stockData.pe_ratio)}
+              value={formatNumber(stockData.price_to_earnings)}
             />
             <MetricCard
               icon={BarChart3}
               label="P/B Ratio"
-              value={formatNumber(stockData.pb_ratio)}
+              value={formatNumber(stockData.price_to_book)}
             />
             <MetricCard
               icon={TrendingUp}
@@ -155,19 +155,13 @@ export default function StockDetail({ ticker, onClose }) {
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-gray-400">P/E Ratio</span>
                   <span className="font-medium text-gray-900 dark:text-gray-100">
-                    {formatNumber(stockData.pe_ratio)}
+                    {formatNumber(stockData.price_to_earnings)}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-gray-400">P/B Ratio</span>
                   <span className="font-medium text-gray-900 dark:text-gray-100">
-                    {formatNumber(stockData.pb_ratio)}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Dividend Yield</span>
-                  <span className="font-medium text-gray-900 dark:text-gray-100">
-                    {formatNumber(stockData.dividend_yield)}%
+                    {formatNumber(stockData.price_to_book)}
                   </span>
                 </div>
               </div>
@@ -181,24 +175,22 @@ export default function StockDetail({ ticker, onClose }) {
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-gray-400">ROE</span>
-                  <span className={`font-medium ${
-                    stockData.roe > 15 ? 'text-green-600' : 'text-gray-900 dark:text-gray-100'
-                  }`}>
+                  <span className={`font-medium ${stockData.roe > 15 ? 'text-green-600' : 'text-gray-900 dark:text-gray-100'
+                    }`}>
                     {formatNumber(stockData.roe)}%
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-gray-400">ROCE</span>
-                  <span className={`font-medium ${
-                    stockData.roce > 15 ? 'text-green-600' : 'text-gray-900 dark:text-gray-100'
-                  }`}>
+                  <span className={`font-medium ${stockData.roce > 15 ? 'text-green-600' : 'text-gray-900 dark:text-gray-100'
+                    }`}>
                     {formatNumber(stockData.roce)}%
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-gray-400">Operating Margin</span>
                   <span className="font-medium text-gray-900 dark:text-gray-100">
-                    {formatNumber(stockData.operating_margin)}%
+                    {formatNumber(stockData.opm)}%
                   </span>
                 </div>
               </div>
@@ -212,9 +204,8 @@ export default function StockDetail({ ticker, onClose }) {
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-gray-600 dark:text-gray-400">Debt/Equity</span>
-                  <span className={`font-medium ${
-                    stockData.debt_equity < 1 ? 'text-green-600' : 'text-gray-900 dark:text-gray-100'
-                  }`}>
+                  <span className={`font-medium ${stockData.debt_equity < 1 ? 'text-green-600' : 'text-gray-900 dark:text-gray-100'
+                    }`}>
                     {formatNumber(stockData.debt_equity)}
                   </span>
                 </div>
@@ -234,15 +225,15 @@ export default function StockDetail({ ticker, onClose }) {
               </h3>
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Revenue Growth</span>
+                  <span className="text-gray-600 dark:text-gray-400">Revenue Growth (3Y CAGR)</span>
                   <span className="font-medium text-gray-900 dark:text-gray-100">
-                    {formatNumber(stockData.revenue_growth)}%
+                    {formatNumber(stockData.revenue_cagr_3y)}%
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Profit Growth</span>
+                  <span className="text-gray-600 dark:text-gray-400">Profit Growth (3Y CAGR)</span>
                   <span className="font-medium text-gray-900 dark:text-gray-100">
-                    {formatNumber(stockData.profit_growth)}%
+                    {formatNumber(stockData.profit_cagr_3y)}%
                   </span>
                 </div>
               </div>

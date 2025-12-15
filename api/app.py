@@ -15,8 +15,10 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from data.database import Database
 from screener.engine import ScreeningEngine
 from screener.criteria import list_available_screens, get_screen_config
+from screener.custom_builder import CustomScreenBuilder
 from portfolio.tracker import PortfolioTracker
-from data.fetcher import YFinanceFetcher
+from data.fetcher import YFinanceFetcher, get_nifty_50, get_nifty_100, get_nifty_500
+from backtesting.engine import BacktestEngine
 
 app = FastAPI(
     title="Stock Screener API",
@@ -27,7 +29,12 @@ app = FastAPI(
 # Enable CORS for React frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000"],
+    allow_origins=[
+        "http://localhost:5173",
+        "http://localhost:5174",
+        "http://localhost:5175",
+        "http://localhost:3000"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -59,6 +66,31 @@ class WatchlistAddRequest(BaseModel):
     notes: Optional[str] = None
 
 
+class CustomScreenCreateRequest(BaseModel):
+    name: str
+    description: str
+    criteria: dict
+    logic: str = 'AND'
+
+
+class CustomScreenRunRequest(BaseModel):
+    name: str
+    limit: int = 50
+
+
+class BacktestRequest(BaseModel):
+    screen_name: str
+    screen_type: str = 'predefined'  # 'predefined' or 'custom'
+    start_date: str
+    end_date: Optional[str] = None
+    holding_period_days: int = 90
+
+
+class UniverseUpdateRequest(BaseModel):
+    universe: str  # 'nifty50', 'nifty100', 'nifty500'
+    limit: Optional[int] = None
+
+
 @app.get("/")
 async def root():
     """Root endpoint."""
@@ -67,9 +99,11 @@ async def root():
         "version": "1.0.0",
         "endpoints": {
             "screens": "/api/screens",
+            "custom_screens": "/api/custom-screens",
             "stocks": "/api/stocks",
             "portfolio": "/api/portfolio",
-            "watchlist": "/api/watchlist"
+            "watchlist": "/api/watchlist",
+            "backtest": "/api/backtest"
         }
     }
 
@@ -374,6 +408,192 @@ async def update_stock_data(tickers: Optional[List[str]] = None):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# Custom Screens Endpoints
+
+@app.get("/api/custom-screens")
+async def list_custom_screens():
+    """List all custom screens."""
+    try:
+        builder = CustomScreenBuilder(db)
+        screens = builder.list_screens()
+        return {"screens": screens}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/custom-screens")
+async def create_custom_screen(request: CustomScreenCreateRequest):
+    """Create a new custom screen."""
+    try:
+        builder = CustomScreenBuilder(db)
+        success = builder.create_screen(
+            request.name,
+            request.description,
+            request.criteria,
+            request.logic
+        )
+        if success:
+            return {"message": f"Custom screen '{request.name}' created"}
+        else:
+            raise HTTPException(status_code=400, detail="Failed to create custom screen")
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.delete("/api/custom-screens/{name}")
+async def delete_custom_screen(name: str):
+    """Delete a custom screen."""
+    try:
+        builder = CustomScreenBuilder(db)
+        success = builder.delete_screen(name)
+        if success:
+            return {"message": f"Custom screen '{name}' deleted"}
+        else:
+            raise HTTPException(status_code=404, detail="Custom screen not found")
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/custom-screens/run")
+async def run_custom_screen(request: CustomScreenRunRequest):
+    """Run a custom screen."""
+    try:
+        builder = CustomScreenBuilder(db)
+        results = builder.run_screen(request.name)
+        
+        if results is None:
+            raise HTTPException(status_code=404, detail="Screen not found or failed to run")
+
+        # Get statistics
+        engine = ScreeningEngine(db)
+        stats = engine.get_screen_statistics(results)
+        
+        # Convert to dict
+        results_list = results.head(request.limit).to_dict(orient='records')
+
+        # Get screen info
+        screen_info = builder.get_screen(request.name)
+
+        return {
+            "screen_name": request.name,
+            "description": screen_info['description'] if screen_info else "",
+            "criteria": screen_info['criteria'] if screen_info else {},
+            "stats": stats,
+            "results": results_list,
+            "total_results": len(results)
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Backtesting Endpoints
+
+@app.post("/api/backtest/run")
+async def run_backtest(request: BacktestRequest):
+    """Run a backtest."""
+    try:
+        engine = BacktestEngine(db)
+        start_date = datetime.strptime(request.start_date, '%Y-%m-%d').date()
+        end_date = datetime.strptime(request.end_date, '%Y-%m-%d').date() if request.end_date else date.today()
+        
+        # Get screen config
+        screen_config = {}
+        if request.screen_type == 'custom':
+            builder = CustomScreenBuilder(db)
+            screen = builder.get_screen(request.screen_name)
+            if not screen:
+                raise HTTPException(status_code=404, detail=f"Custom screen {request.screen_name} not found")
+            screen_config = {
+                'criteria': screen['criteria'],
+                'logic': screen['logic']
+            }
+        else:
+            screen_config = get_screen_config(request.screen_name)
+            if not screen_config:
+                raise HTTPException(status_code=404, detail=f"Predefined screen {request.screen_name} not found")
+        
+        results = engine.run_backtest(
+            request.screen_name,
+            screen_config,
+            start_date,
+            end_date,
+            request.holding_period_days
+        )
+        
+        return results
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/backtest/history")
+async def get_backtest_history(screen_name: Optional[str] = None):
+    """Get backtest history."""
+    try:
+        engine = BacktestEngine(db)
+        history = engine.get_backtest_history(screen_name)
+        return {
+            "history": history.to_dict(orient='records') if not history.empty else []
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/stocks/update-universe")
+async def update_universe(request: UniverseUpdateRequest):
+    """Update stocks for a specific universe."""
+    try:
+        tickers = []
+        if request.universe == 'nifty50':
+            tickers = get_nifty_50()
+        elif request.universe == 'nifty100':
+            tickers = get_nifty_100()
+        elif request.universe == 'nifty500':
+            tickers = get_nifty_500()
+        else:
+            raise HTTPException(status_code=400, detail="Invalid universe. logical choices: nifty50, nifty100, nifty500")
+            
+        if request.limit:
+            tickers = tickers[:request.limit]
+            
+        # Trigger update (reusing existing update function logic)
+        fetcher = YFinanceFetcher()
+        success_count = 0
+        error_count = 0
+        
+        for ticker in tickers:
+            try:
+                data = fetcher.fetch_all_data(ticker, include_history=True)
+                if data:
+                    db.add_company(data['company'])
+                    db.add_fundamentals(data['fundamentals'])
+                    db.add_derived_metrics(data['derived_metrics'])
+                    db.add_growth_metrics(data['growth_metrics'])
+                    db.add_quality_metrics(data['quality_metrics'])
+                    success_count += 1
+                else:
+                    error_count += 1
+            except Exception:
+                error_count += 1
+                
+        return {
+            "message": f"Updated universe {request.universe}",
+            "success": success_count,
+            "errors": error_count,
+            "total_attempted": len(tickers)
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 if __name__ == "__main__":
-    import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

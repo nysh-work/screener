@@ -35,3 +35,16 @@ export const addToWatchlist = (data) => api.post('/api/watchlist', data);
 export const removeFromWatchlist = (ticker) => api.delete(`/api/watchlist/${ticker}`);
 
 export default api;
+
+// Custom Screens
+export const listCustomScreens = () => api.get('/api/custom-screens');
+export const createCustomScreen = (data) => api.post('/api/custom-screens', data);
+export const deleteCustomScreen = (name) => api.delete(`/api/custom-screens/${name}`);
+export const runCustomScreen = (data) => api.post('/api/custom-screens/run', data);
+
+// Backtesting
+export const runBacktest = (data) => api.post('/api/backtest/run', data);
+export const getBacktestHistory = (screenName) => api.get('/api/backtest/history', { params: { screen_name: screenName } });
+
+// Database
+export const updateUniverse = (data) => api.post('/api/stocks/update-universe', data);
