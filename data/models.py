@@ -27,6 +27,9 @@ class CompanyMaster(Base):
     derived_metrics = relationship("DerivedMetrics", back_populates="company")
     growth_metrics = relationship("GrowthMetrics", back_populates="company")
     quality_metrics = relationship("QualityMetrics", back_populates="company")
+    technical_indicators = relationship("TechnicalIndicators", backref="company")
+    portfolio = relationship("Portfolio", backref="company")
+    watchlist = relationship("Watchlist", backref="company")
 
 
 class Fundamentals(Base):
@@ -126,3 +129,78 @@ class AuditLog(Base):
     details = Column(Text)
     user = Column(String(50))
     status = Column(String(20))
+
+
+class TechnicalIndicators(Base):
+    """Technical indicators for stocks."""
+    __tablename__ = 'technical_indicators'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    ticker = Column(String(50), ForeignKey('company_master.ticker'), nullable=False)
+    as_of_date = Column(Date, nullable=False)
+    ema_20 = Column(Float)
+    ema_50 = Column(Float)
+    macd = Column(Float)
+    macd_signal = Column(Float)
+    macd_histogram = Column(Float)
+    choppiness_index = Column(Float)
+    atr_14 = Column(Float)  # Average True Range
+
+
+class Portfolio(Base):
+    """User portfolio holdings."""
+    __tablename__ = 'portfolio'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    ticker = Column(String(50), ForeignKey('company_master.ticker'), nullable=False)
+    purchase_date = Column(Date, nullable=False)
+    quantity = Column(Float, nullable=False)
+    purchase_price = Column(Float, nullable=False)
+    current_price = Column(Float)
+    notes = Column(Text)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class Watchlist(Base):
+    """User watchlist for tracking stocks."""
+    __tablename__ = 'watchlist'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    ticker = Column(String(50), ForeignKey('company_master.ticker'), nullable=False)
+    added_date = Column(Date, default=datetime.utcnow)
+    target_price = Column(Float)
+    notes = Column(Text)
+    alert_enabled = Column(Integer, default=0)  # SQLite doesn't have boolean
+
+
+class CustomScreen(Base):
+    """User-defined custom screening criteria."""
+    __tablename__ = 'custom_screens'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(100), nullable=False, unique=True)
+    description = Column(Text)
+    criteria = Column(Text, nullable=False)  # JSON string of criteria
+    logic = Column(String(10), default='AND')  # AND or OR
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class BacktestResult(Base):
+    """Results from backtesting screens."""
+    __tablename__ = 'backtest_results'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    screen_name = Column(String(100), nullable=False)
+    backtest_date = Column(Date, nullable=False)
+    start_date = Column(Date, nullable=False)
+    end_date = Column(Date, nullable=False)
+    total_stocks_screened = Column(Integer)
+    stocks_passed = Column(Integer)
+    average_return = Column(Float)
+    median_return = Column(Float)
+    best_performer = Column(String(50))
+    worst_performer = Column(String(50))
+    results_detail = Column(Text)  # JSON string of detailed results
+    created_at = Column(DateTime, default=datetime.utcnow)
