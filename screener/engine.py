@@ -55,6 +55,10 @@ class ScreeningEngine:
             'promoter_holding': 'q',
             'altman_z_score': 'q',
             'ocf_to_net_profit': 'q',
+            'ema_20': 'ti',
+            'ema_50': 'ti',
+            'macd': 'ti',
+            'choppiness_index': 'ti',
         }
 
         where_clauses = []
@@ -146,13 +150,19 @@ class ScreeningEngine:
             g.profit_cagr_3y,
             q.promoter_holding,
             q.altman_z_score,
-            q.ocf_to_net_profit
+            q.ocf_to_net_profit,
+            ti.ema_20,
+            ti.ema_50,
+            ti.macd,
+            ti.choppiness_index
         FROM company_master c
         LEFT JOIN fundamentals f ON c.ticker = f.ticker
         LEFT JOIN derived_metrics d ON c.ticker = d.ticker
         LEFT JOIN growth_metrics g ON c.ticker = g.ticker
         LEFT JOIN quality_metrics q ON c.ticker = q.ticker
+        LEFT JOIN technical_indicators ti ON c.ticker = ti.ticker
         WHERE {where_sql}
+        AND (ti.as_of_date = (SELECT MAX(as_of_date) FROM technical_indicators WHERE ticker = c.ticker) OR ti.as_of_date IS NULL)
         ORDER BY d.roe DESC, c.market_cap DESC
         """
 

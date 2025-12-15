@@ -53,6 +53,7 @@ export default function Portfolio() {
     };
 
     const formatCurrency = (num) => `₹${num?.toFixed(2)}`;
+    const formatNumber = (num) => num ? num.toFixed(2) : '-';
 
     if (loading) return <div className="text-center py-8">Loading portfolio...</div>;
 
@@ -164,6 +165,12 @@ export default function Portfolio() {
                             <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Avg Price</th>
                             <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Cur Price</th>
                             <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">P&L</th>
+                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">EV/EBITDA</th>
+                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">P/B</th>
+                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">EMA 20</th>
+                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">EMA 50</th>
+                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">MACD</th>
+                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Chop</th>
                             <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
                         </tr>
                     </thead>
@@ -177,6 +184,12 @@ export default function Portfolio() {
                                 <td className={`px-6 py-4 whitespace-nowrap text-sm text-right font-medium ${holding.unrealized_pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                                     {formatCurrency(holding.unrealized_pnl)} ({holding.return_pct?.toFixed(2)}%)
                                 </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-right dark:text-gray-300">{formatNumber(holding.ev_ebitda)}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-right dark:text-gray-300">{formatNumber(holding.price_to_book)}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-right dark:text-gray-300">{formatNumber(holding.ema_20)}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-right dark:text-gray-300">{formatNumber(holding.ema_50)}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-right dark:text-gray-300">{formatNumber(holding.macd)}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-right dark:text-gray-300">{formatNumber(holding.choppiness_index)}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <button onClick={() => handleRemove(holding.id)} className="text-red-600 hover:text-red-900">
                                         <Trash2 className="w-5 h-5" />
@@ -186,7 +199,7 @@ export default function Portfolio() {
                         ))}
                         {portfolio.holdings.length === 0 && (
                             <tr>
-                                <td colSpan="6" className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                                <td colSpan="12" className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
                                     No holdings found. Add stocks to start tracking.
                                 </td>
                             </tr>

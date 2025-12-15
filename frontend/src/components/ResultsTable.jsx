@@ -118,6 +118,36 @@ export default function ResultsTable({ results, onSelectStock }) {
               >
                 ROE % <SortIcon column="roe" />
               </th>
+              <th
+                onClick={() => handleSort('ev_ebitda')}
+                className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
+              >
+                EV/EBITDA <SortIcon column="ev_ebitda" />
+              </th>
+              <th
+                onClick={() => handleSort('ema_20')}
+                className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
+              >
+                EMA 20 <SortIcon column="ema_20" />
+              </th>
+              <th
+                onClick={() => handleSort('ema_50')}
+                className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
+              >
+                EMA 50 <SortIcon column="ema_50" />
+              </th>
+              <th
+                onClick={() => handleSort('macd')}
+                className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
+              >
+                MACD <SortIcon column="macd" />
+              </th>
+              <th
+                onClick={() => handleSort('choppiness_index')}
+                className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
+              >
+                Chop <SortIcon column="choppiness_index" />
+              </th>
               <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Action
               </th>
@@ -160,6 +190,21 @@ export default function ResultsTable({ results, onSelectStock }) {
                   >
                     {formatNumber(stock.roe)}
                   </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900 dark:text-gray-100">
+                  {formatNumber(stock.ev_ebitda)}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900 dark:text-gray-100">
+                  {formatNumber(stock.ema_20)}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900 dark:text-gray-100">
+                  {formatNumber(stock.ema_50)}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900 dark:text-gray-100">
+                  {formatNumber(stock.macd)}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900 dark:text-gray-100">
+                  {formatNumber(stock.choppiness_index)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
                   <button

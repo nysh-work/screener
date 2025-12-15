@@ -60,7 +60,7 @@ class ScreenRequest(BaseModel):
     screen_type: str
     sectors: Optional[List[str]] = None
     min_market_cap: Optional[float] = None
-    limit: int = 50
+    limit: int = 5000
 
 
 class PortfolioAddRequest(BaseModel):
@@ -193,7 +193,7 @@ async def run_screen(request: ScreenRequest):
 
 @app.get("/api/stocks")
 async def list_stocks(
-    limit: int = Query(100, ge=1, le=500),
+    limit: int = Query(100, ge=1, le=5000),
     sector: Optional[str] = None
 ):
     """List all stocks in database."""
@@ -208,19 +208,26 @@ async def list_stocks(
             f.price as current_price,
             dm.price_to_earnings as pe_ratio,
             dm.price_to_book as pb_ratio,
+            dm.ev_ebitda,
             dm.roe,
             dm.roce,
             dm.debt_equity as debt_to_equity,
             dm.current_ratio,
-            dm.opm as operating_margin
+            dm.opm as operating_margin,
+            ti.ema_20,
+            ti.ema_50,
+            ti.macd,
+            ti.choppiness_index
         FROM company_master c
         LEFT JOIN fundamentals f ON c.ticker = f.ticker
         LEFT JOIN derived_metrics dm ON c.ticker = dm.ticker
+        LEFT JOIN technical_indicators ti ON c.ticker = ti.ticker
         WHERE f.as_of_date = (
             SELECT MAX(as_of_date)
             FROM fundamentals
             WHERE ticker = c.ticker
         )
+        AND (ti.as_of_date = (SELECT MAX(as_of_date) FROM technical_indicators WHERE ticker = c.ticker) OR ti.as_of_date IS NULL)
         """
 
         if sector:

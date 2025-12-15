@@ -33,7 +33,12 @@ export default function Universe() {
     { key: 'debt_to_equity', label: 'Debt/Equity', sortable: true, format: 'number' },
     { key: 'current_ratio', label: 'Current Ratio', sortable: true, format: 'number' },
     { key: 'roe', label: 'ROE %', sortable: true, format: 'percentage' },
-    { key: 'operating_margin', label: 'Operating Margin %', sortable: true, format: 'percentage' }
+    { key: 'operating_margin', label: 'Operating Margin %', sortable: true, format: 'percentage' },
+    { key: 'ev_ebitda', label: 'EV/EBITDA', sortable: true, format: 'number' },
+    { key: 'ema_20', label: 'EMA 20', sortable: true, format: 'number' },
+    { key: 'ema_50', label: 'EMA 50', sortable: true, format: 'number' },
+    { key: 'macd', label: 'MACD', sortable: true, format: 'number' },
+    { key: 'choppiness_index', label: 'Choppiness', sortable: true, format: 'number' }
   ];
 
   useEffect(() => {
@@ -48,7 +53,7 @@ export default function Universe() {
     try {
       setLoading(true);
       setError(null);
-      const response = await getUniverseData({ limit: 500 }); // Get up to 500 stocks
+      const response = await getUniverseData({ limit: 5000 }); // Get up to 500 stocks
       
       // Handle different API response formats
       let stocks = [];
@@ -71,7 +76,12 @@ export default function Universe() {
         debt_to_equity: stock.debt_to_equity || stock.debt_equity_ratio || 0,
         current_ratio: stock.current_ratio || 0,
         operating_margin: stock.operating_margin || stock.opm || stock.operating_profit_margin || 0,
-        roe: stock.roe || stock.return_on_equity || 0
+        roe: stock.roe || stock.return_on_equity || 0,
+        ev_ebitda: stock.ev_ebitda || 0,
+        ema_20: stock.ema_20 || 0,
+        ema_50: stock.ema_50 || 0,
+        macd: stock.macd || 0,
+        choppiness_index: stock.choppiness_index || 0
       }));
       
       setUniverseData(stocksWithMetrics);

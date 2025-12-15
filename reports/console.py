@@ -19,7 +19,7 @@ def display_screen_results(
     screen_description: str = None,
     criteria: Dict = None,
     stats: Dict = None,
-    limit: int = 50
+    limit: int = 5000
 ):
     """
     Display screening results in a rich table format.

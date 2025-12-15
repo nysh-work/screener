@@ -53,6 +53,7 @@ export default function Watchlist() {
     };
 
     const formatCurrency = (num) => num ? `₹${num.toFixed(2)}` : '-';
+    const formatNumber = (num) => num ? num.toFixed(2) : '-';
 
     if (loading && watchlist.length === 0) return <div className="text-center py-8">Loading watchlist...</div>;
 
@@ -137,6 +138,34 @@ export default function Watchlist() {
                                 )}
                             </div>
                         </div>
+                        
+                        <div className="grid grid-cols-2 gap-2 mb-4 text-sm">
+                            <div className="flex justify-between">
+                                <span className="text-gray-500 dark:text-gray-400">EV/EBITDA:</span>
+                                <span className="text-gray-900 dark:text-gray-100">{formatNumber(stock.ev_ebitda)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-gray-500 dark:text-gray-400">P/B:</span>
+                                <span className="text-gray-900 dark:text-gray-100">{formatNumber(stock.price_to_book)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-gray-500 dark:text-gray-400">EMA 20:</span>
+                                <span className="text-gray-900 dark:text-gray-100">{formatNumber(stock.ema_20)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-gray-500 dark:text-gray-400">EMA 50:</span>
+                                <span className="text-gray-900 dark:text-gray-100">{formatNumber(stock.ema_50)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-gray-500 dark:text-gray-400">MACD:</span>
+                                <span className="text-gray-900 dark:text-gray-100">{formatNumber(stock.macd)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-gray-500 dark:text-gray-400">Chop:</span>
+                                <span className="text-gray-900 dark:text-gray-100">{formatNumber(stock.choppiness_index)}</span>
+                            </div>
+                        </div>
+
                         {stock.notes && (
                             <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
                                 <p className="text-sm text-gray-600 dark:text-gray-400 italic">"{stock.notes}"</p>

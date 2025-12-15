@@ -155,9 +155,19 @@ class Database:
             p.current_price,
             p.notes,
             (p.quantity * p.current_price) - (p.quantity * p.purchase_price) as unrealized_pnl,
-            ((p.current_price - p.purchase_price) / p.purchase_price * 100) as return_pct
+            ((p.current_price - p.purchase_price) / p.purchase_price * 100) as return_pct,
+            dm.ev_ebitda,
+            dm.price_to_book,
+            ti.ema_20,
+            ti.ema_50,
+            ti.macd,
+            ti.choppiness_index
         FROM portfolio p
         LEFT JOIN company_master c ON p.ticker = c.ticker
+        LEFT JOIN derived_metrics dm ON p.ticker = dm.ticker
+        LEFT JOIN technical_indicators ti ON p.ticker = ti.ticker
+        WHERE (ti.as_of_date = (SELECT MAX(as_of_date) FROM technical_indicators WHERE ticker = p.ticker) OR ti.as_of_date IS NULL)
+        AND (dm.as_of_date = (SELECT MAX(as_of_date) FROM derived_metrics WHERE ticker = p.ticker) OR dm.as_of_date IS NULL)
         ORDER BY p.purchase_date DESC
         """
         return self.execute_query(query)
@@ -198,11 +208,21 @@ class Database:
             w.target_price,
             w.notes,
             f.price as current_price,
-            ((w.target_price - f.price) / f.price * 100) as upside_pct
+            ((w.target_price - f.price) / f.price * 100) as upside_pct,
+            dm.ev_ebitda,
+            dm.price_to_book,
+            ti.ema_20,
+            ti.ema_50,
+            ti.macd,
+            ti.choppiness_index
         FROM watchlist w
         LEFT JOIN company_master c ON w.ticker = c.ticker
         LEFT JOIN fundamentals f ON w.ticker = f.ticker
+        LEFT JOIN derived_metrics dm ON w.ticker = dm.ticker
+        LEFT JOIN technical_indicators ti ON w.ticker = ti.ticker
         WHERE f.as_of_date = (SELECT MAX(as_of_date) FROM fundamentals WHERE ticker = w.ticker)
+        AND (ti.as_of_date = (SELECT MAX(as_of_date) FROM technical_indicators WHERE ticker = w.ticker) OR ti.as_of_date IS NULL)
+        AND (dm.as_of_date = (SELECT MAX(as_of_date) FROM derived_metrics WHERE ticker = w.ticker) OR dm.as_of_date IS NULL)
         ORDER BY w.added_date DESC
         """
         return self.execute_query(query)
@@ -330,13 +350,19 @@ class Database:
             g.profit_cagr_3y,
             q.promoter_holding,
             q.altman_z_score,
-            q.piotroski_score
+            q.piotroski_score,
+            ti.ema_20,
+            ti.ema_50,
+            ti.macd,
+            ti.choppiness_index
         FROM company_master c
         LEFT JOIN fundamentals f ON c.ticker = f.ticker
         LEFT JOIN derived_metrics d ON c.ticker = d.ticker
         LEFT JOIN growth_metrics g ON c.ticker = g.ticker
         LEFT JOIN quality_metrics q ON c.ticker = q.ticker
+        LEFT JOIN technical_indicators ti ON c.ticker = ti.ticker
         WHERE c.ticker = :ticker
+        AND (ti.as_of_date = (SELECT MAX(as_of_date) FROM technical_indicators WHERE ticker = c.ticker) OR ti.as_of_date IS NULL)
         ORDER BY f.as_of_date DESC
         LIMIT 1
         """

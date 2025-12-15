@@ -120,7 +120,7 @@ def update(full, incremental, tickers, limit, universe, from_file, no_history):
               help='Type of predefined screen to run')
 @click.option('--sector', '-s', multiple=True, help='Filter by sector')
 @click.option('--min-market-cap', type=float, help='Minimum market cap in Crores')
-@click.option('--limit', '-l', type=int, default=500, help='Maximum results to display')
+@click.option('--limit', '-l', type=int, default=5000, help='Maximum results to display')
 @click.option('--output', '-o', help='Save results to file (csv/excel)')
 def screen(screen_type, sector, min_market_cap, limit, output):
     """Run a predefined screening strategy."""
