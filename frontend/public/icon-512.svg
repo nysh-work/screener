@@ -1,0 +1,29 @@
+<svg viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" rx="85" fill="#16a34a"/>
+
+  <!-- Chart Bars - Rising trend -->
+  <rect x="102" y="307" width="40" height="102" rx="10" fill="white" opacity="0.9" />
+  <rect x="168" y="256" width="40" height="153" rx="10" fill="white" />
+  <rect x="234" y="205" width="40" height="204" rx="10" fill="#4ade80" />
+  <rect x="301" y="154" width="40" height="255" rx="10" fill="white" />
+  <rect x="368" y="102" width="40" height="307" rx="10" fill="white" opacity="0.9" />
+
+  <!-- Trend Line -->
+  <path
+    d="M 112 333 L 188 280 L 254 230 L 321 180 L 388 125"
+    stroke="#fbbf24"
+    stroke-width="12"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    fill="none"
+  />
+
+  <!-- Sparkle -->
+  <circle cx="400" cy="117" r="16" fill="#fbbf24" />
+  <path
+    d="M 400 91 L 400 143 M 374 117 L 426 117"
+    stroke="#fbbf24"
+    stroke-width="8"
+    stroke-linecap="round"
+  />
+</svg>
