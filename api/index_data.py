@@ -14,7 +14,7 @@ logger = get_logger(__name__)
 # Nifty index symbols mapping
 NIFTY_INDICES = {
     'nifty_50': '^NSEI',      # NIFTY 50
-    'nifty_500': '^NSENIFTY', # NIFTY 500 (using NIFTY as proxy)
+    'nifty_midcap': '^NSEMDCP50', # NIFTY Midcap
     'nifty_bank': '^NSEBANK',  # NIFTY Bank
     'nifty_it': '^CNXIT',     # NIFTY IT
     'nifty_auto': '^CNXAUTO'  # NIFTY Auto
@@ -32,7 +32,7 @@ class IndexDataService:
         Get current index data with technical indicators.
         
         Args:
-            index_key: One of 'nifty_50', 'nifty_500', 'nifty_bank', 'nifty_it', 'nifty_auto'
+            index_key: One of 'nifty_50', 'nifty_midcap', 'nifty_bank', 'nifty_it', 'nifty_auto'
             
         Returns:
             Dictionary with index data or None if failed
@@ -93,7 +93,7 @@ class IndexDataService:
             # Get index name
             index_names = {
                 'nifty_50': 'NIFTY 50',
-                'nifty_500': 'NIFTY 500',
+                'nifty_midcao': 'NIFTY Midcap',
                 'nifty_bank': 'NIFTY Bank',
                 'nifty_it': 'NIFTY IT',
                 'nifty_auto': 'NIFTY Auto'

@@ -64,7 +64,7 @@ const IndexFooter = () => {
 
   const indexConfig = [
     { key: 'nifty_50', name: 'NIFTY 50', shortName: 'N50' },
-    { key: 'nifty_500', name: 'NIFTY 500', shortName: 'N500' },
+    { key: 'nifty_midcap', name: 'NIFTY Midcap', shortName: 'MIDCAP' },
     { key: 'nifty_bank', name: 'NIFTY Bank', shortName: 'BANK' },
     { key: 'nifty_it', name: 'NIFTY IT', shortName: 'IT' },
     { key: 'nifty_auto', name: 'NIFTY Auto', shortName: 'AUTO' }

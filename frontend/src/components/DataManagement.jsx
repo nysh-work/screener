@@ -91,7 +91,7 @@ export default function DataManagement() {
     };
 
     const handleRefreshIndexData = async () => {
-        if (!confirm('This will refresh all index data (NIFTY 50, 500, Bank, IT, Auto). Continue?')) return;
+        if (!confirm('This will refresh all index data (NIFTY 50, Midcap, Bank, IT, Auto). Continue?')) return;
 
         setLoading(true);
         setStatus(null);
@@ -169,7 +169,7 @@ export default function DataManagement() {
                             <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100">Index Data Management</h3>
                         </div>
                         <p className="text-gray-600 dark:text-gray-400 mb-6">
-                            Refresh index data for NIFTY 50, NIFTY 500, NIFTY Bank, NIFTY IT, and NIFTY Auto indices.
+                            Refresh index data for NIFTY 50, Midcap, NIFTY Bank, NIFTY IT, and NIFTY Auto indices.
                             This updates current prices, technical indicators, and market metrics.
                         </p>
                         <button
