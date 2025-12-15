@@ -118,7 +118,8 @@ async def root():
             "stocks": "/api/stocks",
             "portfolio": "/api/portfolio",
             "watchlist": "/api/watchlist",
-            "backtest": "/api/backtest"
+            "backtest": "/api/backtest",
+            "index": "/api/index"
         }
     }
 

@@ -73,22 +73,22 @@ class IndexDataService:
             low_14d = float(recent_data['Low'].min())
             
             # Calculate EMAs
-            closes = hist_data['Close'].values
+            closes = hist_data['Close']
             ema_20 = calculate_ema(closes, 20)
             ema_50 = calculate_ema(closes, 50)
             
             # Calculate MACD
             macd_line, signal_line, histogram = calculate_macd(closes)
-            current_macd = float(macd_line[-1]) if len(macd_line) > 0 else 0
+            current_macd = float(macd_line.iloc[-1]) if len(macd_line) > 0 else 0
             
             # Calculate Choppiness Index
-            choppiness = calculate_choppiness_index(
-                recent_data['High'].values,
-                recent_data['Low'].values,
-                recent_data['Close'].values,
+            choppiness_series = calculate_choppiness_index(
+                recent_data['High'],
+                recent_data['Low'],
+                recent_data['Close'],
                 period=14
             )
-            choppiness = float(choppiness) if choppiness is not None and not pd.isna(choppiness) else 0
+            choppiness = float(choppiness_series.iloc[-1]) if len(choppiness_series) > 0 and not pd.isna(choppiness_series.iloc[-1]) else 0
             
             # Get index name
             index_names = {
@@ -105,8 +105,8 @@ class IndexDataService:
                 'current_price': current_price,
                 'high_14d': high_14d,
                 'low_14d': low_14d,
-                'ema_20': float(ema_20[-1]) if len(ema_20) > 0 and not pd.isna(ema_20[-1]) else current_price,
-                'ema_50': float(ema_50[-1]) if len(ema_50) > 0 and not pd.isna(ema_50[-1]) else current_price,
+                'ema_20': float(ema_20.iloc[-1]) if len(ema_20) > 0 and not pd.isna(ema_20.iloc[-1]) else current_price,
+                'ema_50': float(ema_50.iloc[-1]) if len(ema_50) > 0 and not pd.isna(ema_50.iloc[-1]) else current_price,
                 'macd': current_macd,
                 'choppiness_index': float(choppiness) if choppiness is not None and not pd.isna(choppiness) else 0,
                 'last_updated': datetime.now().isoformat()
