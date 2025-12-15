@@ -9,7 +9,10 @@ from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.exc import SQLAlchemyError
 from contextlib import contextmanager
 
-from data.models import Base, CompanyMaster, Fundamentals, DerivedMetrics, GrowthMetrics, QualityMetrics, AuditLog
+from data.models import (
+    Base, CompanyMaster, Fundamentals, DerivedMetrics, GrowthMetrics, QualityMetrics,
+    AuditLog, TechnicalIndicators, Portfolio, Watchlist, CustomScreen, BacktestResult
+)
 
 
 class Database:
@@ -119,6 +122,162 @@ class Database:
         with self.get_session() as session:
             quality = QualityMetrics(**quality_data)
             session.add(quality)
+
+    def add_technical_indicators(self, technical_data: Dict) -> None:
+        """Add technical indicators for a company."""
+        with self.get_session() as session:
+            indicators = TechnicalIndicators(**technical_data)
+            session.add(indicators)
+
+    def add_to_portfolio(self, portfolio_data: Dict) -> None:
+        """Add a stock to portfolio."""
+        with self.get_session() as session:
+            holding = Portfolio(**portfolio_data)
+            session.add(holding)
+
+    def remove_from_portfolio(self, portfolio_id: int) -> None:
+        """Remove a stock from portfolio by ID."""
+        with self.get_session() as session:
+            holding = session.query(Portfolio).filter_by(id=portfolio_id).first()
+            if holding:
+                session.delete(holding)
+
+    def get_portfolio(self) -> List[Dict]:
+        """Get all portfolio holdings."""
+        query = """
+        SELECT
+            p.id,
+            p.ticker,
+            c.company_name,
+            p.purchase_date,
+            p.quantity,
+            p.purchase_price,
+            p.current_price,
+            p.notes,
+            (p.quantity * p.current_price) - (p.quantity * p.purchase_price) as unrealized_pnl,
+            ((p.current_price - p.purchase_price) / p.purchase_price * 100) as return_pct
+        FROM portfolio p
+        LEFT JOIN company_master c ON p.ticker = c.ticker
+        ORDER BY p.purchase_date DESC
+        """
+        return self.execute_query(query)
+
+    def update_portfolio_prices(self, ticker: str, current_price: float) -> None:
+        """Update current price for all holdings of a ticker."""
+        with self.get_session() as session:
+            holdings = session.query(Portfolio).filter_by(ticker=ticker).all()
+            for holding in holdings:
+                holding.current_price = current_price
+
+    def add_to_watchlist(self, watchlist_data: Dict) -> None:
+        """Add a stock to watchlist."""
+        with self.get_session() as session:
+            # Check if already exists
+            existing = session.query(Watchlist).filter_by(
+                ticker=watchlist_data['ticker']
+            ).first()
+            if not existing:
+                watchlist = Watchlist(**watchlist_data)
+                session.add(watchlist)
+
+    def remove_from_watchlist(self, ticker: str) -> None:
+        """Remove a stock from watchlist."""
+        with self.get_session() as session:
+            watchlist = session.query(Watchlist).filter_by(ticker=ticker).first()
+            if watchlist:
+                session.delete(watchlist)
+
+    def get_watchlist(self) -> List[Dict]:
+        """Get all watchlist stocks."""
+        query = """
+        SELECT
+            w.ticker,
+            c.company_name,
+            c.sector,
+            w.added_date,
+            w.target_price,
+            w.notes,
+            f.price as current_price,
+            ((w.target_price - f.price) / f.price * 100) as upside_pct
+        FROM watchlist w
+        LEFT JOIN company_master c ON w.ticker = c.ticker
+        LEFT JOIN fundamentals f ON w.ticker = f.ticker
+        WHERE f.as_of_date = (SELECT MAX(as_of_date) FROM fundamentals WHERE ticker = w.ticker)
+        ORDER BY w.added_date DESC
+        """
+        return self.execute_query(query)
+
+    def save_custom_screen(self, screen_data: Dict) -> None:
+        """Save a custom screen."""
+        with self.get_session() as session:
+            # Check if screen with same name exists
+            existing = session.query(CustomScreen).filter_by(
+                name=screen_data['name']
+            ).first()
+
+            if existing:
+                # Update existing
+                for key, value in screen_data.items():
+                    setattr(existing, key, value)
+                existing.updated_at = datetime.utcnow()
+            else:
+                # Create new
+                screen = CustomScreen(**screen_data)
+                session.add(screen)
+
+    def get_custom_screen(self, name: str) -> Optional[Dict]:
+        """Get a custom screen by name."""
+        with self.get_session() as session:
+            screen = session.query(CustomScreen).filter_by(name=name).first()
+            if screen:
+                return {
+                    'id': screen.id,
+                    'name': screen.name,
+                    'description': screen.description,
+                    'criteria': screen.criteria,
+                    'logic': screen.logic,
+                    'created_at': screen.created_at,
+                    'updated_at': screen.updated_at
+                }
+            return None
+
+    def list_custom_screens(self) -> List[Dict]:
+        """List all custom screens."""
+        query = """
+        SELECT id, name, description, created_at, updated_at
+        FROM custom_screens
+        ORDER BY name
+        """
+        return self.execute_query(query)
+
+    def delete_custom_screen(self, name: str) -> None:
+        """Delete a custom screen by name."""
+        with self.get_session() as session:
+            screen = session.query(CustomScreen).filter_by(name=name).first()
+            if screen:
+                session.delete(screen)
+
+    def save_backtest_result(self, backtest_data: Dict) -> None:
+        """Save backtest results."""
+        with self.get_session() as session:
+            result = BacktestResult(**backtest_data)
+            session.add(result)
+
+    def get_backtest_results(self, screen_name: str = None) -> List[Dict]:
+        """Get backtest results, optionally filtered by screen name."""
+        if screen_name:
+            query = """
+            SELECT * FROM backtest_results
+            WHERE screen_name = :screen_name
+            ORDER BY backtest_date DESC
+            """
+            return self.execute_query(query, {'screen_name': screen_name})
+        else:
+            query = """
+            SELECT * FROM backtest_results
+            ORDER BY backtest_date DESC
+            """
+            return self.execute_query(query)
 
     def get_company(self, ticker: str) -> Optional[CompanyMaster]:
         """Retrieve company by ticker."""
