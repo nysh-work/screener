@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  # Backend API Service
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: screener-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite:///data_files/screener.db
+      - PYTHONUNBUFFERED=1
+    volumes:
+      # Persist SQLite database
+      - ./data_files:/app/data_files
+    networks:
+      - screener-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/api/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend Web Service
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: screener-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - screener-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+networks:
+  screener-network:
+    driver: bridge
+
+volumes:
+  data_files:
+    driver: local
