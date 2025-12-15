@@ -230,6 +230,7 @@ async def get_signals(
 ):
     """Get technical signals for all tickers with optional filters."""
     try:
+        fetcher = YFinanceFetcher()
         query = """
         SELECT
             c.ticker,
@@ -261,6 +262,18 @@ async def get_signals(
             ema50 = r.get('ema_50') or 0
             macd = r.get('macd') or 0
             chop = r.get('choppiness_index') or 0
+            if (ema20 == 0 or ema50 == 0 or macd == 0 or chop == 0) and r['ticker']:
+                try:
+                    hist = fetcher.fetch_historical_prices(r['ticker'], period="6mo")
+                    indicators = fetcher.calculate_technical_indicators_from_history(r['ticker'], hist) if hist is not None else None
+                    if indicators:
+                        db.add_technical_indicators(indicators)
+                        ema20 = indicators.get('ema_20') or ema20
+                        ema50 = indicators.get('ema_50') or ema50
+                        macd = indicators.get('macd') or macd
+                        chop = indicators.get('choppiness_index') or chop
+                except Exception:
+                    pass
             item = {
                 'ticker': r['ticker'],
                 'company_name': r.get('company_name'),
