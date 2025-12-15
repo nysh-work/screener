@@ -7,14 +7,11 @@ FROM node:20-alpine AS builder
 # Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY frontend/package*.json ./
-
-# Install dependencies
-RUN npm ci
-
-# Copy source code
+# Copy frontend directory contents
 COPY frontend/ ./
+
+# Install dependencies using npm install instead of npm ci
+RUN npm install
 
 # Build the application
 RUN npm run build
