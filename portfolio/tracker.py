@@ -47,9 +47,13 @@ class PortfolioTracker:
                 'notes': notes
             }
 
-            self.db.add_to_portfolio(portfolio_data)
-            logger.info(f"Added {quantity} shares of {ticker} to portfolio")
-            return True
+            success = self.db.add_to_portfolio(portfolio_data)
+            if success:
+                logger.info(f"Added {quantity} shares of {ticker} to portfolio")
+                return True
+            else:
+                logger.warning(f"Duplicate holding not added: {ticker} {quantity} shares @ ₹{purchase_price} on {purchase_date}")
+                return False
 
         except Exception as e:
             logger.error(f"Error adding to portfolio: {str(e)}")

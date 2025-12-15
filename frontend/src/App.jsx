@@ -9,6 +9,7 @@ import CustomScreener from './components/CustomScreener';
 import Backtest from './components/Backtest';
 import DataManagement from './components/DataManagement';
 import Universe from './components/Universe';
+import IndexFooter from './components/IndexFooter';
 import { runScreen, healthCheck } from './services/api';
 
 function App() {
@@ -235,8 +236,11 @@ function App() {
         />
       )}
 
+      {/* Index Data Footer */}
+      <IndexFooter />
+
       {/* Footer */}
-      <footer className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-12">
+      <footer className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <p className="text-center text-sm text-gray-600 dark:text-gray-400">
             <strong>Disclaimer:</strong> Nishanth, please remember the lessons you have learnt from the past! This is being made to ensure that you do not loose your head and like you did previously.

@@ -129,11 +129,24 @@ class Database:
             indicators = TechnicalIndicators(**technical_data)
             session.add(indicators)
 
-    def add_to_portfolio(self, portfolio_data: Dict) -> None:
-        """Add a stock to portfolio."""
+    def add_to_portfolio(self, portfolio_data: Dict) -> bool:
+        """Add a stock to portfolio. Returns True if added, False if duplicate exists."""
         with self.get_session() as session:
+            # Check for exact duplicate (same ticker, quantity, price, and date)
+            existing = session.query(Portfolio).filter_by(
+                ticker=portfolio_data['ticker'],
+                quantity=portfolio_data['quantity'],
+                purchase_price=portfolio_data['purchase_price'],
+                purchase_date=portfolio_data['purchase_date']
+            ).first()
+            
+            if existing:
+                # Duplicate found, don't add
+                return False
+            
             holding = Portfolio(**portfolio_data)
             session.add(holding)
+            return True
 
     def remove_from_portfolio(self, portfolio_id: int) -> None:
         """Remove a stock from portfolio by ID."""

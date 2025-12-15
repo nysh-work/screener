@@ -36,7 +36,11 @@ export default function Portfolio() {
             setShowAddForm(false);
             fetchPortfolio();
         } catch (error) {
-            alert('Failed to add holding');
+            if (error.response?.status === 409) {
+                alert('This holding already exists in your portfolio');
+            } else {
+                alert('Failed to add holding');
+            }
             console.error(error);
         }
     };

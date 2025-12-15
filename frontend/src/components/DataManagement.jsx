@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { updateUniverse, addStock, addStocksFromCSV } from '../services/api';
-import { RefreshCw, Database, AlertCircle, Plus, Upload } from 'lucide-react';
+import { refreshIndexData } from '../services/indexApi';
+import { RefreshCw, Database, AlertCircle, Plus, Upload, TrendingUp, BarChart3 } from 'lucide-react';
 
 export default function DataManagement() {
     const [loading, setLoading] = useState(false);
@@ -89,6 +90,26 @@ export default function DataManagement() {
         }
     };
 
+    const handleRefreshIndexData = async () => {
+        if (!confirm('This will refresh all index data (NIFTY 50, 500, Bank, IT, Auto). Continue?')) return;
+
+        setLoading(true);
+        setStatus(null);
+        try {
+            const response = await refreshIndexData();
+            setStatus({ 
+                message: response.message || 'Index data refreshed successfully!', 
+                success: 1, 
+                errors: 0 
+            });
+        } catch (error) {
+            console.error('Error refreshing index data:', error);
+            setStatus({ error: 'Failed to refresh index data. Please try again.' });
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="max-w-4xl mx-auto py-8">
             <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md">
@@ -136,6 +157,28 @@ export default function DataManagement() {
                             className="w-full py-2 bg-purple-600 text-white rounded hover:bg-purple-700 disabled:opacity-50"
                         >
                             {loading ? 'Updating...' : 'Update Nifty 500'}
+                        </button>
+                    </div>
+                </div>
+
+                {/* Index Data Refresh Section */}
+                <div className="mt-8 border-t border-gray-200 dark:border-gray-700 pt-8">
+                    <div className="text-center">
+                        <div className="flex items-center justify-center mb-4">
+                            <BarChart3 className="w-8 h-8 text-orange-600 mr-3" />
+                            <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100">Index Data Management</h3>
+                        </div>
+                        <p className="text-gray-600 dark:text-gray-400 mb-6">
+                            Refresh index data for NIFTY 50, NIFTY 500, NIFTY Bank, NIFTY IT, and NIFTY Auto indices.
+                            This updates current prices, technical indicators, and market metrics.
+                        </p>
+                        <button
+                            onClick={handleRefreshIndexData}
+                            disabled={loading}
+                            className="inline-flex items-center px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:opacity-50 font-medium"
+                        >
+                            <TrendingUp className="w-5 h-5 mr-2" />
+                            {loading ? 'Refreshing Index Data...' : 'Fetch Index Values'}
                         </button>
                     </div>
                 </div>

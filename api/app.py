@@ -19,6 +19,7 @@ from screener.custom_builder import CustomScreenBuilder
 from portfolio.tracker import PortfolioTracker
 from data.fetcher import YFinanceFetcher, get_nifty_50, get_nifty_100, get_nifty_500
 from backtesting.engine import BacktestEngine
+from api.index_data import IndexDataService
 
 app = FastAPI(
     title="Stock Screener API",
@@ -43,6 +44,9 @@ app.add_middleware(
 
 # Initialize database
 db = Database()
+
+# Initialize index data service
+index_data_service = IndexDataService()
 
 # Create tables on startup
 @app.on_event("startup")
@@ -332,7 +336,7 @@ async def add_to_portfolio(request: PortfolioAddRequest):
         if success:
             return {"message": f"Added {request.ticker} to portfolio"}
         else:
-            raise HTTPException(status_code=400, detail="Failed to add to portfolio")
+            raise HTTPException(status_code=409, detail="Duplicate holding already exists in portfolio")
     except HTTPException:
         raise
     except Exception as e:
@@ -630,6 +634,52 @@ async def update_universe(request: UniverseUpdateRequest):
         }
     except HTTPException:
         raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# Index Data Endpoints
+
+@app.get("/api/index-data")
+async def get_all_index_data():
+    """Get data for all Nifty indices."""
+    try:
+        index_data = index_data_service.get_all_indices_data()
+        return {
+            "indices": index_data,
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/index-data/{index_key}")
+async def get_single_index_data(index_key: str):
+    """Get data for a specific Nifty index."""
+    try:
+        index_data = index_data_service.get_index_data(index_key)
+        if index_data is None:
+            raise HTTPException(status_code=404, detail=f"Index '{index_key}' not found or data unavailable")
+        
+        return {
+            "index": index_data,
+            "timestamp": datetime.now().isoformat()
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/index-data/refresh")
+async def refresh_index_data():
+    """Refresh all index data cache."""
+    try:
+        index_data_service.refresh_cache()
+        return {
+            "message": "Index data cache refreshed successfully",
+            "timestamp": datetime.now().isoformat()
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
