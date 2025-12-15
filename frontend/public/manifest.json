@@ -1,0 +1,61 @@
+{
+  "name": "Nishanth's Stock Screener - Learn Before You Invest",
+  "short_name": "Stock Screener",
+  "description": "Educational stock screening tool for learning fundamental and technical analysis. Research companies, track portfolios, and understand market metrics.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#16a34a",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/apple-touch-icon.svg",
+      "sizes": "180x180",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["finance", "education", "business"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Run Screen",
+      "short_name": "Screen",
+      "description": "Run a stock screening strategy",
+      "url": "/?tab=screener",
+      "icons": [{ "src": "/logo.svg", "sizes": "96x96" }]
+    },
+    {
+      "name": "Portfolio",
+      "short_name": "Portfolio",
+      "description": "View your portfolio",
+      "url": "/?tab=portfolio",
+      "icons": [{ "src": "/logo.svg", "sizes": "96x96" }]
+    },
+    {
+      "name": "Learn",
+      "short_name": "Learn",
+      "description": "Learn about investing",
+      "url": "/?tab=learn",
+      "icons": [{ "src": "/logo.svg", "sizes": "96x96" }]
+    }
+  ]
+}

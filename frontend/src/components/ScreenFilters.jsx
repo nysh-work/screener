@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { listScreens, listSectors } from '../services/api';
+import Tooltip from './Tooltip';
 
 export default function ScreenFilters({ onRunScreen }) {
   const [screens, setScreens] = useState([]);
@@ -79,9 +80,11 @@ export default function ScreenFilters({ onRunScreen }) {
       <div className="space-y-6">
         {/* Screen Type Selection */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Screening Strategy
-          </label>
+          <Tooltip content="Choose a pre-built screening strategy that filters stocks based on different investing philosophies. Each strategy uses proven fundamental metrics.">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Screening Strategy
+            </label>
+          </Tooltip>
           <select
             value={selectedScreen}
             onChange={(e) => setSelectedScreen(e.target.value)}
@@ -100,9 +103,11 @@ export default function ScreenFilters({ onRunScreen }) {
 
         {/* Market Cap Filter */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Minimum Market Cap (Crores)
-          </label>
+          <Tooltip content="Market capitalization is the total value of a company (share price × total shares). Larger companies are typically less volatile but may grow slower. Small caps can be riskier but offer higher growth potential.">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Minimum Market Cap (Crores)
+            </label>
+          </Tooltip>
           <input
             type="number"
             value={minMarketCap}
@@ -110,13 +115,18 @@ export default function ScreenFilters({ onRunScreen }) {
             placeholder="e.g., 1000"
             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
           />
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            💡 Tip: Large cap (&gt;20,000cr), Mid cap (5,000-20,000cr), Small cap (&lt;5,000cr)
+          </p>
         </div>
 
         {/* Limit Filter */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Max Results: {limit}
-          </label>
+          <Tooltip content="Limits the number of results returned. Start with fewer results for focused research, then expand as needed.">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Max Results: {limit}
+            </label>
+          </Tooltip>
           <input
             type="range"
             min="10"
@@ -130,9 +140,11 @@ export default function ScreenFilters({ onRunScreen }) {
 
         {/* Sector Filter */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Sectors (Optional)
-          </label>
+          <Tooltip content="Filter by industry sector. Diversifying across sectors reduces risk. Each sector performs differently in various economic conditions.">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Sectors (Optional)
+            </label>
+          </Tooltip>
           {sectorsLoading ? (
             <div className="flex items-center justify-center p-4 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700">
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600 mr-2"></div>

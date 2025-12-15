@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { BarChart3, TrendingUp, LayoutGrid, List, PieChart, Eye, History, Database, Menu, X, AlertCircle, Globe } from 'lucide-react';
+import { TrendingUp, LayoutGrid, List, PieChart, Eye, Database, Menu, X, AlertCircle, Globe, BookOpen } from 'lucide-react';
+import Logo from './components/Logo';
 import ScreenFilters from './components/ScreenFilters';
 import ResultsTable from './components/ResultsTable';
 import StockDetail from './components/StockDetail';
@@ -10,6 +11,8 @@ import Signals from './components/Signals';
 import DataManagement from './components/DataManagement';
 import Universe from './components/Universe';
 import IndexFooter from './components/IndexFooter';
+import Learn from './components/Learn';
+import EducationBanner from './components/EducationBanner';
 import { runScreen, healthCheck } from './services/api';
 
 function App() {
@@ -62,50 +65,53 @@ function App() {
     switch (activeTab) {
       case 'screener':
         return (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-1">
-              <ScreenFilters onRunScreen={handleRunScreen} />
-            </div>
-            <div className="lg:col-span-2">
-              {/* Screen Info Banner */}
-              {screenInfo && (
-                <div className="bg-primary-50 dark:bg-primary-900 border border-primary-200 dark:border-primary-700 rounded-lg p-6 mb-6">
-                  <div className="flex items-start">
-                    <TrendingUp className="w-6 h-6 text-primary-600 dark:text-primary-400 mr-3 mt-1" />
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-primary-900 dark:text-primary-100">
-                        {screenInfo.name}
-                      </h3>
-                      <p className="text-sm text-primary-700 dark:text-primary-300 mt-1">
-                        {screenInfo.description}
-                      </p>
-                      {screenInfo.stats && (
-                        <div className="mt-3 flex flex-wrap gap-4 text-sm">
-                          <span className="text-primary-800 dark:text-primary-200">
-                            <strong>Stocks Found:</strong> {screenInfo.stats.total_stocks}
-                          </span>
-                          {screenInfo.stats.avg_pe && (
+          <>
+            <EducationBanner />
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-1">
+                <ScreenFilters onRunScreen={handleRunScreen} />
+              </div>
+              <div className="lg:col-span-2">
+                {/* Screen Info Banner */}
+                {screenInfo && (
+                  <div className="bg-primary-50 dark:bg-primary-900 border border-primary-200 dark:border-primary-700 rounded-lg p-6 mb-6">
+                    <div className="flex items-start">
+                      <TrendingUp className="w-6 h-6 text-primary-600 dark:text-primary-400 mr-3 mt-1" />
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold text-primary-900 dark:text-primary-100">
+                          {screenInfo.name}
+                        </h3>
+                        <p className="text-sm text-primary-700 dark:text-primary-300 mt-1">
+                          {screenInfo.description}
+                        </p>
+                        {screenInfo.stats && (
+                          <div className="mt-3 flex flex-wrap gap-4 text-sm">
                             <span className="text-primary-800 dark:text-primary-200">
-                              <strong>Avg P/E:</strong> {screenInfo.stats.avg_pe.toFixed(2)}
+                              <strong>Stocks Found:</strong> {screenInfo.stats.total_stocks}
                             </span>
-                          )}
-                          {screenInfo.stats.avg_roe && (
-                            <span className="text-primary-800 dark:text-primary-200">
-                              <strong>Avg ROE:</strong> {screenInfo.stats.avg_roe.toFixed(2)}%
-                            </span>
-                          )}
-                        </div>
-                      )}
+                            {screenInfo.stats.avg_pe && (
+                              <span className="text-primary-800 dark:text-primary-200">
+                                <strong>Avg P/E:</strong> {screenInfo.stats.avg_pe.toFixed(2)}
+                              </span>
+                            )}
+                            {screenInfo.stats.avg_roe && (
+                              <span className="text-primary-800 dark:text-primary-200">
+                                <strong>Avg ROE:</strong> {screenInfo.stats.avg_roe.toFixed(2)}%
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
-              <ResultsTable
-                results={screenResults}
-                onSelectStock={handleSelectStock}
-              />
+                )}
+                <ResultsTable
+                  results={screenResults}
+                  onSelectStock={handleSelectStock}
+                />
+              </div>
             </div>
-          </div>
+          </>
         );
       case 'custom':
         return <CustomScreener />;
@@ -119,6 +125,8 @@ function App() {
         return <DataManagement />;
       case 'universe':
         return <Universe />;
+      case 'learn':
+        return <Learn />;
       default:
         return <div>Select a tab</div>;
     }
@@ -144,11 +152,14 @@ function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center">
-              <BarChart3 className="w-8 h-8 text-primary-600 dark:text-primary-400 mr-3" />
+              <Logo className="w-10 h-10 mr-3" />
               <div>
                 <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 hidden sm:block">
-                  Nishanth's Screener
+                  Stock Screener
                 </h1>
+                <p className="text-xs text-gray-500 dark:text-gray-400 hidden lg:block">
+                  Learn Before You Invest
+                </p>
               </div>
             </div>
 
@@ -160,6 +171,7 @@ function App() {
               <NavItem id="watchlist" icon={Eye} label="Watchlist" />
               <NavItem id="universe" icon={Globe} label="Universe" />
               <NavItem id="signals" icon={TrendingUp} label="Signals" />
+              <NavItem id="learn" icon={BookOpen} label="Learn" />
               <NavItem id="data" icon={Database} label="Data" />
             </nav>
 
@@ -195,6 +207,7 @@ function App() {
             <NavItem id="watchlist" icon={Eye} label="Watchlist" />
             <NavItem id="universe" icon={Globe} label="Universe" />
             <NavItem id="signals" icon={TrendingUp} label="Signals" />
+            <NavItem id="learn" icon={BookOpen} label="Learn" />
             <NavItem id="data" icon={Database} label="Data" />
           </div>
         )}
@@ -240,11 +253,37 @@ function App() {
       <IndexFooter />
 
       {/* Footer */}
-      <footer className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <p className="text-center text-sm text-gray-600 dark:text-gray-400">
-            <strong>Disclaimer:</strong> Nishanth, please remember the lessons you have learnt from the past! This is being made to ensure that you do not loose your head and like you did previously.
-          </p>
+      <footer className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="grid md:grid-cols-3 gap-6 mb-6">
+            <div className="text-center md:text-left">
+              <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">⚠️ Risk Warning</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Stock investing involves risk. Past performance does not guarantee future results. Never invest money you cannot afford to lose.
+              </p>
+            </div>
+            <div className="text-center">
+              <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">📚 Education First</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                This tool is for learning and research. Always educate yourself before making investment decisions. Visit the Learn tab.
+              </p>
+            </div>
+            <div className="text-center md:text-right">
+              <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">🛡️ Not Financial Advice</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                This is a research tool, not financial advice. Consult a qualified financial advisor for personalized guidance.
+              </p>
+            </div>
+          </div>
+
+          <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+            <p className="text-center text-sm text-gray-600 dark:text-gray-400 mb-2">
+              <strong>Personal Reminder:</strong> This tool was built to help you learn and make informed decisions - not to gamble.
+            </p>
+            <p className="text-center text-xs text-gray-500 dark:text-gray-500">
+              Remember: Investing is a marathon, not a sprint. Patience, discipline, and continuous learning are your best assets.
+            </p>
+          </div>
         </div>
       </footer>
     </div>
