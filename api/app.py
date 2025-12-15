@@ -33,7 +33,8 @@ app.add_middleware(
         "http://localhost:5173",
         "http://localhost:5174",
         "http://localhost:5175",
-        "http://localhost:3000"
+        "http://localhost:3000",
+        "http://100.65.164.40:3000"
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -42,6 +43,16 @@ app.add_middleware(
 
 # Initialize database
 db = Database()
+
+# Create tables on startup
+@app.on_event("startup")
+async def startup_event():
+    """Create database tables on startup."""
+    try:
+        db.create_tables()
+        print("Database tables created successfully.")
+    except Exception as e:
+        print(f"Error creating database tables: {e}")
 
 
 # Pydantic models for request/response
@@ -194,16 +205,19 @@ async def list_stocks(
             c.sector,
             c.industry,
             f.market_cap,
-            f.current_price,
-            f.pe_ratio,
-            f.pb_ratio,
+            f.price as current_price,
+            dm.price_to_earnings as pe_ratio,
+            dm.price_to_book as pb_ratio,
             dm.roe,
-            dm.roce
-        FROM companies c
+            dm.roce,
+            dm.debt_equity as debt_to_equity,
+            dm.current_ratio,
+            dm.opm as operating_margin
+        FROM company_master c
         LEFT JOIN fundamentals f ON c.ticker = f.ticker
         LEFT JOIN derived_metrics dm ON c.ticker = dm.ticker
-        WHERE f.timestamp = (
-            SELECT MAX(timestamp)
+        WHERE f.as_of_date = (
+            SELECT MAX(as_of_date)
             FROM fundamentals
             WHERE ticker = c.ticker
         )
@@ -215,10 +229,28 @@ async def list_stocks(
         query += f" LIMIT {limit}"
 
         results = db.execute_query(query)
+        
+        # Clean up NaN and infinity values for JSON serialization
+        def clean_value(value):
+            if value is None:
+                return None
+            import math
+            if isinstance(value, float):
+                if math.isnan(value) or math.isinf(value):
+                    return None
+            return value
+        
+        # Clean all numeric values in results
+        cleaned_results = []
+        for row in results:
+            cleaned_row = {}
+            for key, value in row.items():
+                cleaned_row[key] = clean_value(value)
+            cleaned_results.append(cleaned_row)
 
         return {
-            "stocks": results,
-            "count": len(results)
+            "stocks": cleaned_results,
+            "count": len(cleaned_results)
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -246,7 +278,7 @@ async def list_sectors():
     try:
         query = """
         SELECT DISTINCT sector
-        FROM companies
+        FROM company_master
         WHERE sector IS NOT NULL
         ORDER BY sector
         """

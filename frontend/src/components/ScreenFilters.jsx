@@ -4,6 +4,8 @@ import { listScreens, listSectors } from '../services/api';
 export default function ScreenFilters({ onRunScreen }) {
   const [screens, setScreens] = useState([]);
   const [sectors, setSectors] = useState([]);
+  const [sectorsLoading, setSectorsLoading] = useState(true);
+  const [sectorsError, setSectorsError] = useState(false);
   const [selectedScreen, setSelectedScreen] = useState('value');
   const [selectedSectors, setSelectedSectors] = useState([]);
   const [minMarketCap, setMinMarketCap] = useState('');
@@ -25,11 +27,23 @@ export default function ScreenFilters({ onRunScreen }) {
   };
 
   const loadSectors = async () => {
+    setSectorsLoading(true);
+    setSectorsError(false);
     try {
       const response = await listSectors();
       setSectors(response.data.sectors);
     } catch (error) {
       console.error('Error loading sectors:', error);
+      setSectorsError(true);
+      // Fallback to common sectors if API fails
+      const fallbackSectors = [
+        'Technology', 'Healthcare', 'Financial Services', 'Consumer Cyclical',
+        'Consumer Defensive', 'Energy', 'Utilities', 'Industrials',
+        'Communication Services', 'Real Estate', 'Materials', 'Basic Materials'
+      ];
+      setSectors(fallbackSectors);
+    } finally {
+      setSectorsLoading(false);
     }
   };
 
@@ -119,19 +133,31 @@ export default function ScreenFilters({ onRunScreen }) {
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Sectors (Optional)
           </label>
-          <div className="max-h-40 overflow-y-auto border border-gray-300 dark:border-gray-600 rounded-lg p-3 bg-gray-50 dark:bg-gray-700">
-            {sectors.map((sector) => (
-              <label key={sector} className="flex items-center mb-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 p-1 rounded">
-                <input
-                  type="checkbox"
-                  checked={selectedSectors.includes(sector)}
-                  onChange={() => handleSectorToggle(sector)}
-                  className="mr-2 h-4 w-4 text-primary-600 focus:ring-primary-500"
-                />
-                <span className="text-sm text-gray-700 dark:text-gray-300">{sector}</span>
-              </label>
-            ))}
-          </div>
+          {sectorsLoading ? (
+            <div className="flex items-center justify-center p-4 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600 mr-2"></div>
+              <span className="text-sm text-gray-600 dark:text-gray-400">Loading sectors...</span>
+            </div>
+          ) : (
+            <div className="max-h-40 overflow-y-auto border border-gray-300 dark:border-gray-600 rounded-lg p-3 bg-gray-50 dark:bg-gray-700">
+              {sectorsError && (
+                <div className="mb-2 p-2 bg-yellow-100 dark:bg-yellow-900 border border-yellow-400 dark:border-yellow-600 rounded text-sm text-yellow-800 dark:text-yellow-200">
+                  ⚠️ Using default sectors. Server connection issue.
+                </div>
+              )}
+              {sectors.map((sector) => (
+                <label key={sector} className="flex items-center mb-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 p-1 rounded">
+                  <input
+                    type="checkbox"
+                    checked={selectedSectors.includes(sector)}
+                    onChange={() => handleSectorToggle(sector)}
+                    className="mr-2 h-4 w-4 text-primary-600 focus:ring-primary-500"
+                  />
+                  <span className="text-sm text-gray-700 dark:text-gray-300">{sector}</span>
+                </label>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Run Button */}

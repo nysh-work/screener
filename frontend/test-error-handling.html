@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Error Handling Test</title>
+</head>
+<body>
+    <h1>Testing Error Handling</h1>
+    <p>This is a simple test to verify that the error handling improvements work correctly.</p>
+    
+    <script>
+        // Test the formatValue function logic from Universe component
+        function formatValue(value, format) {
+            if (value === null || value === undefined || value === '' || value === 0) {
+                return format === 'currency' ? '₹0' : 'N/A';
+            }
+            
+            try {
+                switch (format) {
+                    case 'currency':
+                        return new Intl.NumberFormat('en-IN', {
+                            style: 'currency',
+                            currency: 'INR',
+                            minimumFractionDigits: 0,
+                            maximumFractionDigits: 0
+                        }).format(value);
+                    case 'percentage':
+                        return `${parseFloat(value).toFixed(2)}%`;
+                    case 'number':
+                        return parseFloat(value).toFixed(2);
+                    default:
+                        return value;
+                }
+            } catch (error) {
+                return 'N/A';
+            }
+        }
+        
+        // Test cases
+        console.log('Testing formatValue function:');
+        console.log('formatValue(null, "currency"):', formatValue(null, 'currency'));
+        console.log('formatValue(0, "currency"):', formatValue(0, 'currency'));
+        console.log('formatValue(123.456, "currency"):', formatValue(123.456, 'currency'));
+        console.log('formatValue(15.5, "percentage"):', formatValue(15.5, 'percentage'));
+        console.log('formatValue(2.333, "number"):', formatValue(2.333, 'number'));
+        console.log('formatValue("invalid", "number"):', formatValue('invalid', 'number'));
+        
+        document.write('<h2>Test Results:</h2>');
+        document.write('<p>Check the browser console for detailed test results.</p>');
+        document.write('<p>All formatValue tests should complete without errors.</p>');
+    </script>
+</body>
+</html>

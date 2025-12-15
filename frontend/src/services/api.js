@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -20,6 +20,7 @@ export const runScreen = (screenData) => api.post('/api/screens/run', screenData
 export const listStocks = (params) => api.get('/api/stocks', { params });
 export const getStockInfo = (ticker) => api.get(`/api/stocks/${ticker}`);
 export const updateStockData = (tickers) => api.post('/api/stocks/update', { tickers });
+export const getUniverseData = (params) => api.get('/api/stocks', { params });
 
 // Sectors
 export const listSectors = () => api.get('/api/sectors');
@@ -48,3 +49,5 @@ export const getBacktestHistory = (screenName) => api.get('/api/backtest/history
 
 // Database
 export const updateUniverse = (data) => api.post('/api/stocks/update-universe', data);
+export const addStock = (data) => api.post('/api/stocks', data);
+export const addStocksFromCSV = (data) => api.post('/api/stocks/csv', data);

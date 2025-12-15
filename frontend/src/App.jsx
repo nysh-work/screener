@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BarChart3, TrendingUp, LayoutGrid, List, PieChart, Eye, History, Database, Menu, X, AlertCircle } from 'lucide-react';
+import { BarChart3, TrendingUp, LayoutGrid, List, PieChart, Eye, History, Database, Menu, X, AlertCircle, Globe } from 'lucide-react';
 import ScreenFilters from './components/ScreenFilters';
 import ResultsTable from './components/ResultsTable';
 import StockDetail from './components/StockDetail';
@@ -8,6 +8,7 @@ import Watchlist from './components/Watchlist';
 import CustomScreener from './components/CustomScreener';
 import Backtest from './components/Backtest';
 import DataManagement from './components/DataManagement';
+import Universe from './components/Universe';
 import { runScreen, healthCheck } from './services/api';
 
 function App() {
@@ -115,6 +116,8 @@ function App() {
         return <Backtest />;
       case 'data':
         return <DataManagement />;
+      case 'universe':
+        return <Universe />;
       default:
         return <div>Select a tab</div>;
     }
@@ -143,7 +146,7 @@ function App() {
               <BarChart3 className="w-8 h-8 text-primary-600 dark:text-primary-400 mr-3" />
               <div>
                 <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 hidden sm:block">
-                  Stock Screener
+                  Nishanth's Screener
                 </h1>
               </div>
             </div>
@@ -154,6 +157,7 @@ function App() {
               <NavItem id="custom" icon={List} label="Custom" />
               <NavItem id="portfolio" icon={PieChart} label="Portfolio" />
               <NavItem id="watchlist" icon={Eye} label="Watchlist" />
+              <NavItem id="universe" icon={Globe} label="Universe" />
               <NavItem id="backtest" icon={History} label="Backtest" />
               <NavItem id="data" icon={Database} label="Data" />
             </nav>
@@ -188,6 +192,7 @@ function App() {
             <NavItem id="custom" icon={List} label="Custom" />
             <NavItem id="portfolio" icon={PieChart} label="Portfolio" />
             <NavItem id="watchlist" icon={Eye} label="Watchlist" />
+            <NavItem id="universe" icon={Globe} label="Universe" />
             <NavItem id="backtest" icon={History} label="Backtest" />
             <NavItem id="data" icon={Database} label="Data" />
           </div>
@@ -234,8 +239,7 @@ function App() {
       <footer className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 mt-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <p className="text-center text-sm text-gray-600 dark:text-gray-400">
-            <strong>Disclaimer:</strong> This tool is for educational purposes only. Not investment advice.
-            Always conduct your own research.
+            <strong>Disclaimer:</strong> Nishanth, please remember the lessons you have learnt from the past! This is being made to ensure that you do not loose your head and like you did previously.
           </p>
         </div>
       </footer>
