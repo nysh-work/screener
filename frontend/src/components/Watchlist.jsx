@@ -116,63 +116,83 @@ export default function Watchlist() {
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {watchlist.map((stock) => (
-                    <div key={stock.ticker} className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 relative">
-                        <button
-                            onClick={() => handleRemove(stock.ticker)}
-                            className="absolute top-4 right-4 text-gray-400 hover:text-red-500"
-                        >
-                            <Trash2 className="w-5 h-5" />
-                        </button>
-                        <div className="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">{stock.ticker}</h3>
-                                <p className="text-gray-500 dark:text-gray-400 text-sm">Target: {formatCurrency(stock.target_price)}</p>
-                            </div>
-                            <div className="text-right">
-                                <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">{formatCurrency(stock.current_price)}</p>
-                                {stock.upside && (
-                                    <p className={`text-sm font-medium ${stock.upside > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                        {stock.upside > 0 ? '+' : ''}{stock.upside.toFixed(2)}%
-                                    </p>
-                                )}
-                            </div>
-                        </div>
-                        
-                        <div className="grid grid-cols-2 gap-2 mb-4 text-sm">
-                            <div className="flex justify-between">
-                                <span className="text-gray-500 dark:text-gray-400">EV/EBITDA:</span>
-                                <span className="text-gray-900 dark:text-gray-100">{formatNumber(stock.ev_ebitda)}</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-gray-500 dark:text-gray-400">P/B:</span>
-                                <span className="text-gray-900 dark:text-gray-100">{formatNumber(stock.price_to_book)}</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-gray-500 dark:text-gray-400">EMA 20:</span>
-                                <span className="text-gray-900 dark:text-gray-100">{formatNumber(stock.ema_20)}</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-gray-500 dark:text-gray-400">EMA 50:</span>
-                                <span className="text-gray-900 dark:text-gray-100">{formatNumber(stock.ema_50)}</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-gray-500 dark:text-gray-400">MACD:</span>
-                                <span className="text-gray-900 dark:text-gray-100">{formatNumber(stock.macd)}</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-gray-500 dark:text-gray-400">Chop:</span>
-                                <span className="text-gray-900 dark:text-gray-100">{formatNumber(stock.choppiness_index)}</span>
-                            </div>
-                        </div>
+                {watchlist.map((stock) => {
+                    const hasTarget = stock.target_price && stock.current_price;
+                    const upside =
+                        hasTarget
+                            ? ((stock.target_price - stock.current_price) / stock.current_price) * 100
+                            : null;
+                    const inBuyZone =
+                        hasTarget
+                            ? stock.current_price <= stock.target_price * 1.02
+                            : false;
 
-                        {stock.notes && (
-                            <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
-                                <p className="text-sm text-gray-600 dark:text-gray-400 italic">"{stock.notes}"</p>
+                    return (
+                        <div
+                            key={stock.ticker}
+                            className={`bg-white dark:bg-gray-800 rounded-lg shadow p-6 relative border ${inBuyZone ? 'border-green-500 ring-1 ring-green-200 dark:ring-green-700' : 'border-transparent'}`}
+                        >
+                            <button
+                                onClick={() => handleRemove(stock.ticker)}
+                                className="absolute top-4 right-4 text-gray-400 hover:text-red-500"
+                            >
+                                <Trash2 className="w-5 h-5" />
+                            </button>
+                            <div className="flex justify-between items-start mb-4">
+                                <div>
+                                    <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">{stock.ticker}</h3>
+                                    <p className="text-gray-500 dark:text-gray-400 text-sm">Target: {formatCurrency(stock.target_price)}</p>
+                                    {inBuyZone && (
+                                        <p className="mt-1 text-xs font-semibold text-green-600 dark:text-green-400">
+                                            In buy zone
+                                        </p>
+                                    )}
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">{formatCurrency(stock.current_price)}</p>
+                                    {upside !== null && (
+                                        <p className={`text-sm font-medium ${upside >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                            {upside >= 0 ? '+' : ''}{upside.toFixed(2)}%
+                                        </p>
+                                    )}
+                                </div>
                             </div>
-                        )}
-                    </div>
-                ))}
+                            
+                            <div className="grid grid-cols-2 gap-2 mb-4 text-sm">
+                                <div className="flex justify-between">
+                                    <span className="text-gray-500 dark:text-gray-400">EV/EBITDA:</span>
+                                    <span className="text-gray-900 dark:text-gray-100">{formatNumber(stock.ev_ebitda)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-500 dark:text-gray-400">P/B:</span>
+                                    <span className="text-gray-900 dark:text-gray-100">{formatNumber(stock.price_to_book)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-500 dark:text-gray-400">EMA 20:</span>
+                                    <span className="text-gray-900 dark:text-gray-100">{formatNumber(stock.ema_20)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-500 dark:text-gray-400">EMA 50:</span>
+                                    <span className="text-gray-900 dark:text-gray-100">{formatNumber(stock.ema_50)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-500 dark:text-gray-400">MACD:</span>
+                                    <span className="text-gray-900 dark:text-gray-100">{formatNumber(stock.macd)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-500 dark:text-gray-400">Chop:</span>
+                                    <span className="text-gray-900 dark:text-gray-100">{formatNumber(stock.choppiness_index)}</span>
+                                </div>
+                            </div>
+
+                            {stock.notes && (
+                                <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 italic">"{stock.notes}"</p>
+                                </div>
+                            )}
+                        </div>
+                    );
+                })}
             </div>
 
             {watchlist.length === 0 && !loading && (

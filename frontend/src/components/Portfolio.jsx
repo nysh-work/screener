@@ -61,6 +61,15 @@ export default function Portfolio() {
 
     if (loading) return <div className="text-center py-8">Loading portfolio...</div>;
 
+    const holdingsWithPnl = portfolio.holdings || [];
+    const sortedByPnl = [...holdingsWithPnl].sort((a, b) => {
+        const aPnl = a.unrealized_pnl ?? 0;
+        const bPnl = b.unrealized_pnl ?? 0;
+        return bPnl - aPnl;
+    });
+    const topContributors = sortedByPnl.slice(0, 3);
+    const bottomContributors = [...sortedByPnl].reverse().slice(0, 3);
+
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
@@ -74,27 +83,85 @@ export default function Portfolio() {
             </div>
 
             {portfolio.summary && (
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-                        <p className="text-sm text-gray-500 dark:text-gray-400">Total Invested</p>
-                        <p className="text-xl font-bold dark:text-gray-100">{formatCurrency(portfolio.summary.total_invested)}</p>
+                <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+                            <p className="text-sm text-gray-500 dark:text-gray-400">Total Invested</p>
+                            <p className="text-xl font-bold dark:text-gray-100">{formatCurrency(portfolio.summary.total_invested)}</p>
+                        </div>
+                        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+                            <p className="text-sm text-gray-500 dark:text-gray-400">Current Value</p>
+                            <p className="text-xl font-bold dark:text-gray-100">{formatCurrency(portfolio.summary.current_value)}</p>
+                        </div>
+                        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+                            <p className="text-sm text-gray-500 dark:text-gray-400">Total P&L</p>
+                            <div className={`flex items-center text-xl font-bold ${portfolio.summary.total_pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                {portfolio.summary.total_pnl >= 0 ? <TrendingUp className="w-5 h-5 mr-1" /> : <TrendingDown className="w-5 h-5 mr-1" />}
+                                {formatCurrency(portfolio.summary.total_pnl)}
+                            </div>
+                        </div>
+                        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+                            <p className="text-sm text-gray-500 dark:text-gray-400">Return %</p>
+                            <p className={`text-xl font-bold ${portfolio.summary.total_return_pct >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                {portfolio.summary.total_return_pct?.toFixed(2)}%
+                            </p>
+                        </div>
                     </div>
-                    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-                        <p className="text-sm text-gray-500 dark:text-gray-400">Current Value</p>
-                        <p className="text-xl font-bold dark:text-gray-100">{formatCurrency(portfolio.summary.current_value)}</p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+                            <p className="text-sm text-gray-500 dark:text-gray-400">Total Holdings</p>
+                            <p className="text-xl font-bold dark:text-gray-100">{portfolio.summary.total_holdings}</p>
+                        </div>
+                        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+                            <p className="text-sm text-gray-500 dark:text-gray-400">Best Performer</p>
+                            <p className="text-xl font-bold text-green-600 dark:text-green-400">
+                                {portfolio.summary.best_performer || '-'}
+                            </p>
+                        </div>
+                        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+                            <p className="text-sm text-gray-500 dark:text-gray-400">Worst Performer</p>
+                            <p className="text-xl font-bold text-red-600 dark:text-red-400">
+                                {portfolio.summary.worst_performer || '-'}
+                            </p>
+                        </div>
                     </div>
+                </div>
+            )}
+
+            {holdingsWithPnl.length > 0 && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-                        <p className="text-sm text-gray-500 dark:text-gray-400">Total P&L</p>
-                        <div className={`flex items-center text-xl font-bold ${portfolio.summary.total_pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {portfolio.summary.total_pnl >= 0 ? <TrendingUp className="w-5 h-5 mr-1" /> : <TrendingDown className="w-5 h-5 mr-1" />}
-                            {formatCurrency(portfolio.summary.total_pnl)}
+                        <p className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">Top Contributors</p>
+                        <div className="space-y-1">
+                            {topContributors.map((h) => (
+                                <div key={h.id} className="flex items-center justify-between text-sm">
+                                    <span className="font-medium text-gray-800 dark:text-gray-100">{h.ticker}</span>
+                                    <span className="text-green-600 dark:text-green-400">
+                                        {formatCurrency(h.unrealized_pnl)} ({h.return_pct?.toFixed(2)}%)
+                                    </span>
+                                </div>
+                            ))}
+                            {topContributors.length === 0 && (
+                                <p className="text-sm text-gray-500 dark:text-gray-400">No holdings yet.</p>
+                            )}
                         </div>
                     </div>
                     <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-                        <p className="text-sm text-gray-500 dark:text-gray-400">Return %</p>
-                        <p className={`text-xl font-bold ${portfolio.summary.total_return_pct >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {portfolio.summary.total_return_pct?.toFixed(2)}%
-                        </p>
+                        <p className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-2">Top Detractors</p>
+                        <div className="space-y-1">
+                            {bottomContributors.map((h) => (
+                                <div key={h.id} className="flex items-center justify-between text-sm">
+                                    <span className="font-medium text-gray-800 dark:text-gray-100">{h.ticker}</span>
+                                    <span className="text-red-600 dark:text-red-400">
+                                        {formatCurrency(h.unrealized_pnl)} ({h.return_pct?.toFixed(2)}%)
+                                    </span>
+                                </div>
+                            ))}
+                            {bottomContributors.length === 0 && (
+                                <p className="text-sm text-gray-500 dark:text-gray-400">No holdings yet.</p>
+                            )}
+                        </div>
                     </div>
                 </div>
             )}
@@ -160,7 +227,7 @@ export default function Portfolio() {
                 </div>
             )}
 
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead className="bg-gray-50 dark:bg-gray-900">
                         <tr>

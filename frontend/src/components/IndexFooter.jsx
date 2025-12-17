@@ -110,7 +110,7 @@ const IndexFooter = () => {
           <div className="flex items-center space-x-2">
             {lastUpdated && (
               <span className="text-xs text-gray-500 dark:text-gray-400">
-                Updated: {lastUpdated.toLocaleTimeString()}
+                Updated: {lastUpdated.toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata' })}
               </span>
             )}
             <button

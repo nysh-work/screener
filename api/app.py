@@ -256,6 +256,21 @@ async def get_signals(
         """
         rows = db.execute_query(query)
         results = []
+
+        def trend_direction(current_value: float, previous_value: float):
+            if current_value is None or previous_value is None:
+                return None
+            try:
+                current = float(current_value)
+                previous = float(previous_value)
+            except (TypeError, ValueError):
+                return None
+            if current > previous:
+                return "up"
+            if current < previous:
+                return "down"
+            return "flat"
+
         for r in rows:
             price = r.get('current_price') or 0
             ema20 = r.get('ema_20') or 0
@@ -274,6 +289,31 @@ async def get_signals(
                         chop = indicators.get('choppiness_index') or chop
                 except Exception:
                     pass
+
+            ema20_trend = None
+            ema50_trend = None
+            macd_trend = None
+            chop_trend = None
+
+            try:
+                hist_query = """
+                SELECT ema_20, ema_50, macd, choppiness_index
+                FROM technical_indicators
+                WHERE ticker = :ticker
+                ORDER BY as_of_date DESC, id DESC
+                LIMIT 2
+                """
+                hist_rows = db.execute_query(hist_query, {'ticker': r['ticker']})
+                if len(hist_rows) == 2:
+                    latest_row = hist_rows[0]
+                    prev_row = hist_rows[1]
+                    ema20_trend = trend_direction(latest_row.get('ema_20'), prev_row.get('ema_20'))
+                    ema50_trend = trend_direction(latest_row.get('ema_50'), prev_row.get('ema_50'))
+                    macd_trend = trend_direction(latest_row.get('macd'), prev_row.get('macd'))
+                    chop_trend = trend_direction(latest_row.get('choppiness_index'), prev_row.get('choppiness_index'))
+            except Exception:
+                pass
+
             item = {
                 'ticker': r['ticker'],
                 'company_name': r.get('company_name'),
@@ -287,9 +327,52 @@ async def get_signals(
                 'macd_bullish': macd > 0,
                 'macd_bearish': macd < 0,
                 'trending': chop <= 38.2,
-                'choppy': chop >= 61.8
+                'choppy': chop >= 61.8,
+                'ema_20_trend': ema20_trend,
+                'ema_50_trend': ema50_trend,
+                'macd_trend': macd_trend,
+                'choppiness_trend': chop_trend,
+                'is_index': False,
             }
             results.append(item)
+
+        # Add tradable indices (NIFTY, BANKNIFTY, SENSEX, etc.) to signals universe
+        try:
+            index_universe = index_data_service.get_all_indices_data()
+            for key, idx in index_universe.items():
+                try:
+                    idx_price = float(idx.get('current_price', 0) or 0)
+                    idx_ema20 = float(idx.get('ema_20', 0) or 0)
+                    idx_ema50 = float(idx.get('ema_50', 0) or 0)
+                    idx_macd = float(idx.get('macd', 0) or 0)
+                    idx_chop = float(idx.get('choppiness_index', 0) or 0)
+                except (TypeError, ValueError):
+                    idx_price = idx_ema20 = idx_ema50 = idx_macd = idx_chop = 0.0
+
+                index_item = {
+                    'ticker': idx.get('index_name') or key.upper(),
+                    'company_name': idx.get('symbol'),
+                    'current_price': round(idx_price, 2),
+                    'ema_20': round(idx_ema20, 2),
+                    'ema_50': round(idx_ema50, 2),
+                    'macd': round(idx_macd, 2),
+                    'choppiness_index': round(idx_chop, 2),
+                    'ema_bullish': idx_price > idx_ema20 > idx_ema50 if idx_price and idx_ema20 and idx_ema50 else False,
+                    'ema_bearish': idx_price < idx_ema20 < idx_ema50 if idx_price and idx_ema20 and idx_ema50 else False,
+                    'macd_bullish': idx_macd > 0,
+                    'macd_bearish': idx_macd < 0,
+                    'trending': idx_chop <= 38.2 if idx_chop else False,
+                    'choppy': idx_chop >= 61.8 if idx_chop else False,
+                    'ema_20_trend': None,
+                    'ema_50_trend': None,
+                    'macd_trend': None,
+                    'choppiness_trend': None,
+                    'is_index': True,
+                }
+                results.append(index_item)
+        except Exception:
+            # If index data fails, continue with stock signals only
+            pass
         # Apply filters server-side
         def match_filters(s):
             if search:
@@ -552,9 +635,28 @@ async def get_watchlist():
         tracker = PortfolioTracker()
         stocks = tracker.get_watchlist()
 
-        return {
-            "watchlist": stocks.to_dict(orient='records') if not stocks.empty else []
-        }
+        if stocks.empty:
+            return {"watchlist": []}
+
+        # Convert to dict and clean NaN/inf values for JSON serialization
+        raw_watchlist = stocks.to_dict(orient='records')
+
+        import math
+
+        def clean_value(value):
+            if value is None:
+                return None
+            if isinstance(value, float):
+                if math.isnan(value) or math.isinf(value):
+                    return None
+            return value
+
+        cleaned_watchlist = []
+        for row in raw_watchlist:
+            cleaned_row = {key: clean_value(value) for key, value in row.items()}
+            cleaned_watchlist.append(cleaned_row)
+
+        return {"watchlist": cleaned_watchlist}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

@@ -11,13 +11,14 @@ from utils.logger import get_logger
 
 logger = get_logger(__name__)
 
-# Nifty index symbols mapping
+# Nifty and other tradable index symbols mapping
 NIFTY_INDICES = {
-    'nifty_50': '^NSEI',      # NIFTY 50
+    'nifty_50': '^NSEI',          # NIFTY 50
     'nifty_midcap': '^NSEMDCP50', # NIFTY Midcap
-    'nifty_bank': '^NSEBANK',  # NIFTY Bank
-    'nifty_it': '^CNXIT',     # NIFTY IT
-    'nifty_auto': '^CNXAUTO'  # NIFTY Auto
+    'nifty_bank': '^NSEBANK',     # NIFTY Bank
+    'nifty_it': '^CNXIT',         # NIFTY IT
+    'nifty_auto': '^CNXAUTO',     # NIFTY Auto
+    'sensex': '^BSESN',           # SENSEX
 }
 
 class IndexDataService:
@@ -96,7 +97,8 @@ class IndexDataService:
                 'nifty_midcap': 'NIFTY Midcap',
                 'nifty_bank': 'NIFTY Bank',
                 'nifty_it': 'NIFTY IT',
-                'nifty_auto': 'NIFTY Auto'
+                'nifty_auto': 'NIFTY Auto',
+                'sensex': 'SENSEX',
             }
             
             result = {

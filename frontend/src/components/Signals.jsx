@@ -55,7 +55,11 @@ export default function Signals() {
 
   const format = n => n !== null && n !== undefined ? Number(n).toFixed(2) : '-';
 
-  const handleAddWatchlist = async (ticker) => {
+  const handleAddWatchlist = async (ticker, isIndex) => {
+    if (isIndex) {
+      alert('Index instruments are not added to the stock watchlist.');
+      return;
+    }
     try {
       await addToWatchlist({ ticker });
       alert(`Added ${ticker} to watchlist`);
@@ -176,10 +180,34 @@ export default function Signals() {
               <tr key={s.ticker}>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">{s.ticker}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-right">{format(s.current_price)}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-right">{format(s.ema_20)}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-right">{format(s.ema_50)}</td>
-                <td className={`px-6 py-4 whitespace-nowrap text-sm text-right ${s.macd >= 0 ? 'text-green-600' : 'text-red-600'}`}>{format(s.macd)}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-right">{format(s.choppiness_index)}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
+                  <div className="flex items-center justify-end space-x-1">
+                    {s.ema_20_trend === 'up' && <TrendingUp className="w-3 h-3 text-green-500" />}
+                    {s.ema_20_trend === 'down' && <TrendingDown className="w-3 h-3 text-red-500" />}
+                    <span>{format(s.ema_20)}</span>
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
+                  <div className="flex items-center justify-end space-x-1">
+                    {s.ema_50_trend === 'up' && <TrendingUp className="w-3 h-3 text-green-500" />}
+                    {s.ema_50_trend === 'down' && <TrendingDown className="w-3 h-3 text-red-500" />}
+                    <span>{format(s.ema_50)}</span>
+                  </div>
+                </td>
+                <td className={`px-6 py-4 whitespace-nowrap text-sm text-right ${s.macd >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  <div className="flex items-center justify-end space-x-1">
+                    {s.macd_trend === 'up' && <TrendingUp className="w-3 h-3 text-green-500" />}
+                    {s.macd_trend === 'down' && <TrendingDown className="w-3 h-3 text-red-500" />}
+                    <span>{format(s.macd)}</span>
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
+                  <div className="flex items-center justify-end space-x-1">
+                    {s.choppiness_trend === 'up' && <TrendingUp className="w-3 h-3 text-green-500" />}
+                    {s.choppiness_trend === 'down' && <TrendingDown className="w-3 h-3 text-red-500" />}
+                    <span>{format(s.choppiness_index)}</span>
+                  </div>
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm">
                   <div className="flex items-center space-x-2">
                     {s.ema_bullish && <span className="px-2 py-1 text-xs rounded bg-green-100 text-green-700">EMA Bullish</span>}
@@ -191,7 +219,15 @@ export default function Signals() {
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
-                  <button onClick={() => handleAddWatchlist(s.ticker)} className="inline-flex items-center px-3 py-1 bg-primary-600 text-white rounded hover:bg-primary-700">
+                  <button
+                    onClick={() => handleAddWatchlist(s.ticker, s.is_index)}
+                    className={`inline-flex items-center px-3 py-1 rounded ${
+                      s.is_index
+                        ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
+                        : 'bg-primary-600 text-white hover:bg-primary-700'
+                    }`}
+                    disabled={s.is_index}
+                  >
                     <Plus className="w-4 h-4 mr-1" /> Watchlist
                   </button>
                 </td>
