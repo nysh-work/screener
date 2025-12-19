@@ -53,16 +53,21 @@ export default function EducationBanner() {
 
           <div className="space-y-3 text-gray-700 dark:text-gray-300">
             <p className="text-base leading-relaxed">
-              Welcome to your stock screening tool! This is designed to help you <strong>learn</strong> and <strong>research</strong> - not to gamble with your money.
+              Welcome to your stock screening tool! This is designed to help you{' '}
+              <strong>learn</strong> and <strong>research</strong> - not to
+              gamble with your money.
             </p>
 
             <div className="grid md:grid-cols-3 gap-4 mt-4">
               <div className="flex items-start gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg">
                 <Lightbulb className="w-5 h-5 text-yellow-500 flex-shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="font-semibold text-sm mb-1">Educate Yourself</h4>
+                  <h4 className="font-semibold text-sm mb-1">
+                    Educate Yourself
+                  </h4>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Understand financial metrics before making decisions. Visit the Learn tab.
+                    Understand financial metrics before making decisions. Visit
+                    the Learn tab.
                   </p>
                 </div>
               </div>
@@ -70,9 +75,12 @@ export default function EducationBanner() {
               <div className="flex items-start gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg">
                 <TrendingUp className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="font-semibold text-sm mb-1">Research Thoroughly</h4>
+                  <h4 className="font-semibold text-sm mb-1">
+                    Research Thoroughly
+                  </h4>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Use screening as a starting point. Always do deeper research.
+                    Use screening as a starting point. Always do deeper
+                    research.
                   </p>
                 </div>
               </div>
@@ -80,9 +88,12 @@ export default function EducationBanner() {
               <div className="flex items-start gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg">
                 <Shield className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="font-semibold text-sm mb-1">Invest Responsibly</h4>
+                  <h4 className="font-semibold text-sm mb-1">
+                    Invest Responsibly
+                  </h4>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Never invest money you can't afford to lose. This is not gambling.
+                    Never invest money you can't afford to lose. This is not
+                    gambling.
                   </p>
                 </div>
               </div>
@@ -90,8 +101,10 @@ export default function EducationBanner() {
 
             <div className="mt-4 p-3 bg-amber-100 dark:bg-amber-900 border border-amber-300 dark:border-amber-700 rounded-lg">
               <p className="text-sm text-amber-900 dark:text-amber-100">
-                <strong>⚠️ Remember:</strong> Past performance doesn't guarantee future results.
-                Markets are unpredictable. Learn the fundamentals, understand the risks, and never chase quick profits.
+                <strong>⚠️ Remember:</strong> Past performance doesn't guarantee
+                future results. Markets are unpredictable. Learn the
+                fundamentals, understand the risks, and never chase quick
+                profits.
               </p>
             </div>
           </div>

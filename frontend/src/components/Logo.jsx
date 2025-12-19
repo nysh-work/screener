@@ -1,17 +1,18 @@
-export default function Logo({ className = "w-8 h-8", variant = "color" }) {
-  const colors = variant === "color"
-    ? {
-        primary: "#16a34a",
-        secondary: "#22c55e",
-        accent: "#4ade80",
-        bg: "white"
-      }
-    : {
-        primary: "currentColor",
-        secondary: "currentColor",
-        accent: "currentColor",
-        bg: "transparent"
-      };
+export default function Logo({ className = 'w-8 h-8', variant = 'color' }) {
+  const colors =
+    variant === 'color'
+      ? {
+          primary: '#16a34a',
+          secondary: '#22c55e',
+          accent: '#4ade80',
+          bg: 'white',
+        }
+      : {
+          primary: 'currentColor',
+          secondary: 'currentColor',
+          accent: 'currentColor',
+          bg: 'transparent',
+        };
 
   return (
     <svg
@@ -21,14 +22,53 @@ export default function Logo({ className = "w-8 h-8", variant = "color" }) {
       xmlns="http://www.w3.org/2000/svg"
     >
       {/* Background Circle */}
-      <circle cx="50" cy="50" r="48" fill={colors.bg} stroke={colors.primary} strokeWidth="2" />
+      <circle
+        cx="50"
+        cy="50"
+        r="48"
+        fill={colors.bg}
+        stroke={colors.primary}
+        strokeWidth="2"
+      />
 
       {/* Chart Bars - Rising trend */}
-      <rect x="20" y="60" width="8" height="20" rx="2" fill={colors.primary} opacity="0.8" />
-      <rect x="33" y="50" width="8" height="30" rx="2" fill={colors.secondary} opacity="0.9" />
+      <rect
+        x="20"
+        y="60"
+        width="8"
+        height="20"
+        rx="2"
+        fill={colors.primary}
+        opacity="0.8"
+      />
+      <rect
+        x="33"
+        y="50"
+        width="8"
+        height="30"
+        rx="2"
+        fill={colors.secondary}
+        opacity="0.9"
+      />
       <rect x="46" y="40" width="8" height="40" rx="2" fill={colors.accent} />
-      <rect x="59" y="30" width="8" height="50" rx="2" fill={colors.secondary} opacity="0.9" />
-      <rect x="72" y="20" width="8" height="60" rx="2" fill={colors.primary} opacity="0.8" />
+      <rect
+        x="59"
+        y="30"
+        width="8"
+        height="50"
+        rx="2"
+        fill={colors.secondary}
+        opacity="0.9"
+      />
+      <rect
+        x="72"
+        y="20"
+        width="8"
+        height="60"
+        rx="2"
+        fill={colors.primary}
+        opacity="0.8"
+      />
 
       {/* Trend Line */}
       <path

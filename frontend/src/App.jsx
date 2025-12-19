@@ -1,5 +1,17 @@
 import { useState, useEffect } from 'react';
-import { TrendingUp, LayoutGrid, List, PieChart, Eye, Database, Menu, X, AlertCircle, Globe, BookOpen } from 'lucide-react';
+import {
+  TrendingUp,
+  LayoutGrid,
+  List,
+  PieChart,
+  Eye,
+  Database,
+  Menu,
+  X,
+  AlertCircle,
+  Globe,
+  BookOpen,
+} from 'lucide-react';
 import Logo from './components/Logo';
 import ScreenFilters from './components/ScreenFilters';
 import ResultsTable from './components/ResultsTable';
@@ -49,7 +61,9 @@ function App() {
       });
     } catch (error) {
       console.error('Error running screen:', error);
-      alert('Failed to run screen. Make sure the backend is running and data is loaded.');
+      alert(
+        'Failed to run screen. Make sure the backend is running and data is loaded.'
+      );
     }
   };
 
@@ -87,16 +101,19 @@ function App() {
                         {screenInfo.stats && (
                           <div className="mt-3 flex flex-wrap gap-4 text-sm">
                             <span className="text-primary-800 dark:text-primary-200">
-                              <strong>Stocks Found:</strong> {screenInfo.stats.total_stocks}
+                              <strong>Stocks Found:</strong>{' '}
+                              {screenInfo.stats.total_stocks}
                             </span>
                             {screenInfo.stats.avg_pe && (
                               <span className="text-primary-800 dark:text-primary-200">
-                                <strong>Avg P/E:</strong> {screenInfo.stats.avg_pe.toFixed(2)}
+                                <strong>Avg P/E:</strong>{' '}
+                                {screenInfo.stats.avg_pe.toFixed(2)}
                               </span>
                             )}
                             {screenInfo.stats.avg_roe && (
                               <span className="text-primary-800 dark:text-primary-200">
-                                <strong>Avg ROE:</strong> {screenInfo.stats.avg_roe.toFixed(2)}%
+                                <strong>Avg ROE:</strong>{' '}
+                                {screenInfo.stats.avg_roe.toFixed(2)}%
                               </span>
                             )}
                           </div>
@@ -134,11 +151,15 @@ function App() {
 
   const NavItem = ({ id, icon: Icon, label }) => (
     <button
-      onClick={() => { setActiveTab(id); setMobileMenuOpen(false); }}
-      className={`flex items-center px-3 py-2 rounded-md text-sm font-medium ${activeTab === id
+      onClick={() => {
+        setActiveTab(id);
+        setMobileMenuOpen(false);
+      }}
+      className={`flex items-center px-3 py-2 rounded-md text-sm font-medium ${
+        activeTab === id
           ? 'bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-100'
           : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'
-        }`}
+      }`}
     >
       <Icon className="w-4 h-4 mr-2" />
       {label}
@@ -176,15 +197,27 @@ function App() {
             </nav>
 
             <div className="flex items-center">
-              <div className={`flex items-center px-3 py-1 rounded-full text-xs sm:text-sm ${apiStatus === 'healthy'
-                  ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                  : apiStatus === 'error'
-                    ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                    : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                }`}>
-                <div className={`w-2 h-2 rounded-full mr-2 ${apiStatus === 'healthy' ? 'bg-green-500' : 'bg-red-500'
-                  }`}></div>
-                <span className="hidden sm:inline">{apiStatus === 'healthy' ? 'API Connected' : apiStatus === 'error' ? 'API Error' : 'Checking...'}</span>
+              <div
+                className={`flex items-center px-3 py-1 rounded-full text-xs sm:text-sm ${
+                  apiStatus === 'healthy'
+                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                    : apiStatus === 'error'
+                      ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                      : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                }`}
+              >
+                <div
+                  className={`w-2 h-2 rounded-full mr-2 ${
+                    apiStatus === 'healthy' ? 'bg-green-500' : 'bg-red-500'
+                  }`}
+                ></div>
+                <span className="hidden sm:inline">
+                  {apiStatus === 'healthy'
+                    ? 'API Connected'
+                    : apiStatus === 'error'
+                      ? 'API Error'
+                      : 'Checking...'}
+                </span>
               </div>
 
               {/* Mobile menu button */}
@@ -192,7 +225,11 @@ function App() {
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="md:hidden ml-4 p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500"
               >
-                {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+                {mobileMenuOpen ? (
+                  <X className="h-6 w-6" />
+                ) : (
+                  <Menu className="h-6 w-6" />
+                )}
               </button>
             </div>
           </div>
@@ -243,10 +280,7 @@ function App() {
 
       {/* Stock Detail Modal */}
       {selectedStock && (
-        <StockDetail
-          ticker={selectedStock}
-          onClose={handleCloseStockDetail}
-        />
+        <StockDetail ticker={selectedStock} onClose={handleCloseStockDetail} />
       )}
 
       {/* Index Data Footer */}
@@ -257,31 +291,43 @@ function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="grid md:grid-cols-3 gap-6 mb-6">
             <div className="text-center md:text-left">
-              <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">⚠️ Risk Warning</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                ⚠️ Risk Warning
+              </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Stock investing involves risk. Past performance does not guarantee future results. Never invest money you cannot afford to lose.
+                Stock investing involves risk. Past performance does not
+                guarantee future results. Never invest money you cannot afford
+                to lose.
               </p>
             </div>
             <div className="text-center">
-              <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">📚 Education First</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                📚 Education First
+              </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                This tool is for learning and research. Always educate yourself before making investment decisions. Visit the Learn tab.
+                This tool is for learning and research. Always educate yourself
+                before making investment decisions. Visit the Learn tab.
               </p>
             </div>
             <div className="text-center md:text-right">
-              <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">🛡️ Not Financial Advice</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                🛡️ Not Financial Advice
+              </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                This is a research tool, not financial advice. Consult a qualified financial advisor for personalized guidance.
+                This is a research tool, not financial advice. Consult a
+                qualified financial advisor for personalized guidance.
               </p>
             </div>
           </div>
 
           <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
             <p className="text-center text-sm text-gray-600 dark:text-gray-400 mb-2">
-              <strong>Personal Reminder:</strong> This tool was built to help you learn and make informed decisions - not to gamble.
+              <strong>Personal Reminder:</strong> This tool was built to help
+              you learn and make informed decisions - not to gamble.
             </p>
             <p className="text-center text-xs text-gray-500 dark:text-gray-500">
-              Remember: Investing is a marathon, not a sprint. Patience, discipline, and continuous learning are your best assets.
+              Remember: Investing is a marathon, not a sprint. Patience,
+              discipline, and continuous learning are your best assets.
             </p>
           </div>
         </div>

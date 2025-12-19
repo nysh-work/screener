@@ -38,9 +38,18 @@ export default function ScreenFilters({ onRunScreen }) {
       setSectorsError(true);
       // Fallback to common sectors if API fails
       const fallbackSectors = [
-        'Technology', 'Healthcare', 'Financial Services', 'Consumer Cyclical',
-        'Consumer Defensive', 'Energy', 'Utilities', 'Industrials',
-        'Communication Services', 'Real Estate', 'Materials', 'Basic Materials'
+        'Technology',
+        'Healthcare',
+        'Financial Services',
+        'Consumer Cyclical',
+        'Consumer Defensive',
+        'Energy',
+        'Utilities',
+        'Industrials',
+        'Communication Services',
+        'Real Estate',
+        'Materials',
+        'Basic Materials',
       ];
       setSectors(fallbackSectors);
     } finally {
@@ -116,7 +125,8 @@ export default function ScreenFilters({ onRunScreen }) {
             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
           />
           <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            💡 Tip: Large cap (&gt;20,000cr), Mid cap (5,000-20,000cr), Small cap (&lt;5,000cr)
+            💡 Tip: Large cap (&gt;20,000cr), Mid cap (5,000-20,000cr), Small
+            cap (&lt;5,000cr)
           </p>
         </div>
 
@@ -148,7 +158,9 @@ export default function ScreenFilters({ onRunScreen }) {
           {sectorsLoading ? (
             <div className="flex items-center justify-center p-4 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700">
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600 mr-2"></div>
-              <span className="text-sm text-gray-600 dark:text-gray-400">Loading sectors...</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">
+                Loading sectors...
+              </span>
             </div>
           ) : (
             <div className="max-h-40 overflow-y-auto border border-gray-300 dark:border-gray-600 rounded-lg p-3 bg-gray-50 dark:bg-gray-700">
@@ -158,14 +170,19 @@ export default function ScreenFilters({ onRunScreen }) {
                 </div>
               )}
               {sectors.map((sector) => (
-                <label key={sector} className="flex items-center mb-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 p-1 rounded">
+                <label
+                  key={sector}
+                  className="flex items-center mb-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 p-1 rounded"
+                >
                   <input
                     type="checkbox"
                     checked={selectedSectors.includes(sector)}
                     onChange={() => handleSectorToggle(sector)}
                     className="mr-2 h-4 w-4 text-primary-600 focus:ring-primary-500"
                   />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">{sector}</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">
+                    {sector}
+                  </span>
                 </label>
               ))}
             </div>
